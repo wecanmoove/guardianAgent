@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.db
+.env
+.venv/
+venv/
+.DS_Store
+
+# judge evidence: large binaries stay out of git by default (git add -f to include)
+submission/evidence/*
+!submission/evidence/.gitkeep

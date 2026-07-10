@@ -261,7 +261,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
     <a href="#nist" data-view="nist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7z"/><path d="M9 12h6M12 9v6"/></svg>NIST Governance Center</a>
     <a href="#audit" data-view="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h4"/></svg>Evidence &amp; Audit Trail</a>
   </nav>
-  <div class="sidebar-foot">Engine <b>Fable-5 reasoning core</b><br>Policy pack <b>v2026.07 · 148 rules</b><br><span class="badge b-ok pulse" style="margin-top:6px">GATE ONLINE</span></div>
+  <div class="sidebar-foot">Engine <b id="engine-name">local heuristics (offline)</b><br>Policy pack <b>v2026.07 · 148 rules</b><br><span class="badge b-ok pulse" id="gate-badge" style="margin-top:6px">STATIC DEMO</span></div>
 </aside>
 
 <!-- ======================= MAIN ======================= -->
@@ -953,28 +953,50 @@ function emptyInspect(){
     <div><div style="font-size:2rem;opacity:.4">⌖</div>
     <p class="muted" style="max-width:340px;margin-top:8px;font-size:.83rem">Analysis output appears here. Load a demo sample or paste your own code, then run the deep analysis.</p></div></div>`;
 }
-function runInspection(){
+function renderInspection(r,engineLabel,reasoning){
+  const out=$('#inspect-out');
+  const vcls={Allow:'v-allow',Review:'v-review',Block:'v-block',Quarantine:'v-quarantine'}[r.decision]||'v-review';
+  const rz=reasoning?`<div class="card" style="margin-bottom:12px"><h3>Gemini reasoning (intent)</h3>
+      <div style="font-size:.83rem"><b>${esc(reasoning.threat_class||'—')}</b> · confidence ${(100*(reasoning.confidence||0)).toFixed(0)}% · false-positive risk ${esc(reasoning.false_positive_risk||'—')}</div>
+      <p style="font-size:.8rem;color:var(--txt2);margin-top:6px">${esc(reasoning.summary||'')}</p>
+      ${reasoning.remediation?`<p style="font-size:.79rem;margin-top:6px"><b>Next action:</b> ${esc(reasoning.remediation)}</p>`:''}</div>`:'';
+  out.innerHTML=`
+      <div class="verdict ${vcls}"><span class="v-badge">${r.decision.toUpperCase()}</span>
+        <div><div style="font-weight:600;font-size:.88rem">${esc(r.why)}</div>
+        <div class="dim" style="font-size:.74rem;margin-top:3px">${r.findings.length} finding${r.findings.length!==1?'s':''} · composite risk ${r.total}/100 · engine ${esc(engineLabel)}</div></div></div>
+      ${rz}
+      <div class="card" style="margin-bottom:12px"><h3>Composite risk breakdown</h3><div class="scorebars">${CATS.map(([c,label])=>{
+        const v=Math.round(r.catScore[c]||0);const col=v>=60?'var(--crit)':v>=30?'var(--warn)':'var(--ok)';
+        return `<div class="sb"><span>${label}</span><span class="track"><span class="fill" style="width:${v}%;background:${col}"></span></span><span class="num">${v}</span></div>`;}).join('')}</div></div>
+      <div>${r.findings.length?r.findings.map(f=>`<div class="finding sev-${f.sev}">
+        <div class="f-head"><span class="f-name">${esc(f.name)}</span>${sevBadge(f.sev)}<span class="badge b-neutral mono">${f.id}</span>${f.line?`<span class="f-line">line ${f.line}</span>`:''}</div>
+        <div class="f-desc">${esc(f.desc)}</div>${f.snippet?`<div class="f-code">${esc(f.snippet)}</div>`:''}</div>`).join('')
+        :'<div class="card" style="text-align:center;color:var(--ok)">✓ No detections across all layers.</div>'}</div>`;
+}
+async function runInspection(){
   const src=$('#code-input').value;
   const out=$('#inspect-out');
   if(!src.trim()){out.innerHTML=emptyInspect();toast('Nothing to analyze — paste code first.');return;}
   const btn=$('#analyze-btn');btn.disabled=true;btn.textContent='Analyzing…';
   out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">running 7 analysis layers</div><p class="dim" style="margin-top:10px;font-size:.75rem">secrets → deps → injection → obfuscation → exfiltration → CI policy → agent safety</p></div></div>`;
-  setTimeout(()=>{
-    const r=analyze(src);
-    const vcls={Allow:'v-allow',Review:'v-review',Block:'v-block',Quarantine:'v-quarantine'}[r.decision];
-    out.innerHTML=`
-      <div class="verdict ${vcls}"><span class="v-badge">${r.decision.toUpperCase()}</span>
-        <div><div style="font-weight:600;font-size:.88rem">${r.why}</div>
-        <div class="dim" style="font-size:.74rem;margin-top:3px">${r.findings.length} finding${r.findings.length!==1?'s':''} · composite risk ${r.total}/100 · engine Fable-5 heuristic layer</div></div></div>
-      <div class="card" style="margin-bottom:12px"><h3>Composite risk breakdown</h3><div class="scorebars">${CATS.map(([c,label])=>{
-        const v=Math.round(r.catScore[c]);const col=v>=60?'var(--crit)':v>=30?'var(--warn)':'var(--ok)';
-        return `<div class="sb"><span>${label}</span><span class="track"><span class="fill" style="width:${v}%;background:${col}"></span></span><span class="num">${v}</span></div>`;}).join('')}</div></div>
-      <div>${r.findings.length?r.findings.map(f=>`<div class="finding sev-${f.sev}">
-        <div class="f-head"><span class="f-name">${f.name}</span>${sevBadge(f.sev)}<span class="badge b-neutral mono">${f.id}</span>${f.line?`<span class="f-line">line ${f.line}</span>`:''}</div>
-        <div class="f-desc">${f.desc}</div>${f.snippet?`<div class="f-code">${esc(f.snippet)}</div>`:''}</div>`).join('')
-        :'<div class="card" style="text-align:center;color:var(--ok)">✓ No detections across all layers.</div>'}</div>`;
-    btn.disabled=false;btn.textContent='▶ Run deep analysis';
-  },900);
+  // Try the live backend (deterministic + Gemini 2.5 Flash). Fall back to the
+  // in-browser analyzer so the demo always works offline.
+  try{
+    const resp=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code:src,repo:'inspection-studio',sha:'adhoc'})});
+    if(!resp.ok)throw new Error('backend '+resp.status);
+    const j=await resp.json();
+    const a=j.analysis;
+    const r={decision:j.decision,why:a.why,total:a.composite,catScore:a.cat_score,
+      findings:a.findings.map(f=>({id:f.id,name:f.name,sev:f.sev,desc:f.desc,line:f.line,snippet:f.snippet}))};
+    const live=(j.reasoning.engine||'').startsWith('gemini')&&!/(fallback)/.test(j.reasoning.engine);
+    renderInspection(r,(live?'LIVE ':'')+(j.reasoning.engine||'backend')+' + evidence '+j.evidence,j.reasoning);
+    toast('Scan '+j.evidence+' recorded in audit trail (decision: '+j.decision+').');
+  }catch(err){
+    const r=analyze(src);r.total=r.total;
+    renderInspection(r,'Fable-5 heuristic layer (offline)',null);
+  }
+  btn.disabled=false;btn.textContent='▶ Run deep analysis';
 }
 document.addEventListener('DOMContentLoaded',()=>{
   $('#sample-select').addEventListener('change',e=>{
@@ -982,6 +1004,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   $('#inspect-out').innerHTML=emptyInspect();
 });
+
+/* ---------- live backend probe (Gemini status in sidebar) ---------- */
+(async()=>{
+  try{
+    const r=await fetch('/health',{signal:AbortSignal.timeout(2500)});
+    if(!r.ok)throw new Error();
+    const h=await r.json();
+    $('#engine-name').textContent=h.gemini?h.model+' · Vertex AI (LIVE)':'backend engine + deterministic fallback';
+    $('#gate-badge').textContent=h.gemini?'GATE ONLINE · GEMINI LIVE':'GATE ONLINE';
+  }catch(e){/* static demo — keep offline defaults */}
+})();
 
 /* ---------- gates ---------- */
 function renderGates(){
