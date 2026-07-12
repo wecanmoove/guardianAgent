@@ -28,7 +28,9 @@ TYPOSQUATS = {
     "python-dateutils": "python-dateutil", "reqeusts": "requests", "urlib3": "urllib3",
     "beutifulsoup4": "beautifulsoup4", "djago": "django", "flaskk": "flask",
     "numpi": "numpy", "pandass": "pandas", "crypto-utils-py": "cryptography",
-    "discord-py-slash": "discord.py", "re-act": "react",
+    "discord-py-slash": "discord.py", "re-act": "react", "colourama": "colorama",
+    "python3-dateutil": "python-dateutil", "jeIlyfish": "jellyfish", "reqests": "requests",
+    "tensorflaw": "tensorflow", "opencv-pyhton": "opencv-python", "scikit-learn-": "scikit-learn",
 }
 
 RULES = [
@@ -88,6 +90,67 @@ RULES = [
     Rule("AGT-005", "agent", "Agent self-privilege language", "medium", 10,
          "Content requests weakening of agent guardrails or sandbox policy.",
          r"(?i)(?:disable|bypass|remove).{0,24}(?:guardrail|safety|policy|sandbox)"),
+
+    # ---- extended secret detection ----
+    Rule("SEC-005", "code", "Google API key", "critical", 33,
+         "A Google API key (AIza…) is embedded. Restrict, rotate, and move to Secret Manager.",
+         r"AIza[0-9A-Za-z_\-]{35}", ["T1552.001"]),
+    Rule("SEC-006", "code", "GitHub token", "critical", 34,
+         "A GitHub access token (ghp_/gho_/ghs_/ghr_) is present. Revoke immediately in GitHub settings.",
+         r"gh[posru]_[0-9A-Za-z]{36,}", ["T1552.001"]),
+    Rule("SEC-007", "code", "Slack token", "high", 24,
+         "A Slack token (xox…) is exposed — workspace access risk. Rotate and audit app scopes.",
+         r"xox[baprs]-[0-9A-Za-z-]{10,}", ["T1552.001"]),
+    Rule("SEC-008", "code", "Private key block", "critical", 36,
+         "A PEM private key is committed. This is a full-credential leak; rotate the key pair now.",
+         r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----", ["T1552.004"]),
+    Rule("SEC-009", "code", "JSON Web Token literal", "medium", 12,
+         "A hardcoded JWT was found. Tokens embedded in source are frequently long-lived and over-scoped.",
+         r"eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"),
+    Rule("SEC-010", "code", "Twilio / SendGrid key", "high", 24,
+         "A Twilio (SK…) or SendGrid (SG.…) API key is present. Rotate; these carry billing and send scope.",
+         r"SK[0-9a-fA-F]{32}|SG\.[0-9A-Za-z_\-]{22}\.[0-9A-Za-z_\-]{43}", ["T1552.001"]),
+
+    # ---- injection ----
+    Rule("INJ-010", "code", "SQL built by string formatting", "high", 24,
+         "A SQL statement is assembled with f-string/%/+ from variables — classic SQL injection. Use parameterized queries.",
+         r"""(?i)(?:execute|executemany|cursor\.execute|query)\s*\(\s*(?:f["']|["'][^"']*["']\s*[%+]|["'][^"']*\{)""",
+         ["T1190"]),
+    Rule("INJ-012", "code", "Shell command from dynamic input", "critical", 30,
+         "os.system / subprocess with shell=True built from variables — OS command injection path.",
+         r"""(?i)(?:os\.system|os\.popen|subprocess\.(?:call|run|Popen))\s*\([^)]*(?:f["']|["'][^"']*[%+]|\+\s*\w|shell\s*=\s*True[^)]*(?:f["']|\+))""",
+         ["T1059"]),
+    Rule("INJ-014", "exposure", "Path traversal from user input", "high", 20,
+         "A file path is opened from request/args input without normalization — directory traversal risk.",
+         r"""(?i)open\s*\(\s*(?:.*\+\s*)?(?:request|args|params|input|user)[\w\.\[\]'"]*\s*(?:\+|,|\))""",
+         ["T1083"]),
+    Rule("INJ-016", "exposure", "SSRF: outbound request to user-controlled URL", "high", 20,
+         "An HTTP client is called with a user-supplied URL — server-side request forgery vector.",
+         r"""(?i)requests\.(?:get|post|put)\s*\(\s*(?:request|args|params|input|user|url_param)""",
+         ["T1090"]),
+
+    # ---- crypto / transport hardening ----
+    Rule("CRY-002", "code", "TLS verification disabled", "high", 22,
+         "Certificate verification is turned off (verify=False / CERT_NONE) — enables man-in-the-middle.",
+         r"(?i)verify\s*=\s*False|ssl\.CERT_NONE|InsecureRequestWarning|check_hostname\s*=\s*False",
+         ["T1557"]),
+    Rule("CRY-004", "code", "Weak hash for credentials", "medium", 12,
+         "MD5/SHA1 used near password/token handling — cryptographically broken for secrets. Use bcrypt/argon2.",
+         r"(?i)(?:md5|sha1)\s*\(\s*[^)]*(?:pass|pwd|secret|token|salt)"),
+    Rule("CRY-006", "code", "Insecure randomness for security value", "medium", 10,
+         "random.random/randint used to mint a token/secret/OTP — predictable. Use secrets / os.urandom.",
+         r"(?i)(?:token|secret|otp|nonce|session[_-]?id)\s*=\s*.*random\.(?:random|randint|choice|randrange)"),
+
+    # ---- exposure / misconfiguration ----
+    Rule("EXP-011", "exposure", "Debug server bound to all interfaces", "high", 18,
+         "Flask/Django debug mode with host 0.0.0.0 exposes an RCE console to the network. Never in production.",
+         r"(?i)debug\s*=\s*True|run\([^)]*host\s*=\s*[\"']0\.0\.0\.0[\"']", ["T1190"]),
+    Rule("EXP-013", "exposure", "Overly permissive CORS", "medium", 9,
+         "Access-Control-Allow-Origin '*' with credentials exposes authenticated endpoints cross-origin.",
+         r"""(?i)Access-Control-Allow-Origin["']?\s*[:,]\s*["']\*|CORS\([^)]*origins\s*=\s*["']\*"""),
+    Rule("SUP-020", "supply", "Dependency pinned to a Git URL / HTTP", "medium", 10,
+         "A dependency resolves from a raw Git/HTTP URL rather than a checksummed registry release.",
+         r"(?i)(?:git\+https?:\/\/|@\s*git|https?:\/\/)[^\s]+\.git|pip install[^\n]*--index-url"),
 ]
 
 CATS = [("code", "Code risk"), ("supply", "Supply chain"), ("exfil", "Exfiltration"),
@@ -97,8 +160,10 @@ _COMPILED = [(r, re.compile(r.pattern)) for r in RULES if r.pattern]
 
 
 def _env_exfil(src: str) -> bool:
-    reads_env = re.search(r"os\.environ(?:\.items\(\)|\[|\.get)", src)
-    sends = re.search(r"(?i)requests\.(?:post|put|get)|urllib|httpx|fetch\s*\(|curl\s+", src)
+    # Catch both explicit reads (os.environ.items()/[…]/.get) and bare passes
+    # such as `data=os.environ`, `json=dict(os.environ)`, `.env` file reads.
+    reads_env = re.search(r"os\.environ\b|getenv\s*\(|open\s*\(\s*[\"'][^\"']*\.env[\"']", src)
+    sends = re.search(r"(?i)requests\.(?:post|put|get)|urllib|httpx|socket\.|fetch\s*\(|curl\s+|smtplib|webhook", src)
     return bool(reads_env and sends)
 
 

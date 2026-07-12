@@ -79,6 +79,13 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system
 .grid{display:grid;gap:14px}
 .g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
 .g23{grid-template-columns:2fr 1fr}.g32{grid-template-columns:1fr 2fr}
+.help-dl{margin:0}
+.help-dl dt{font-size:.84rem;font-weight:600;color:var(--txt);margin-top:12px;display:inline-flex;align-items:center;gap:6px}
+.help-dl dt:first-child{margin-top:0}
+.help-dl dt[onclick]{cursor:pointer;color:var(--accent)}
+.help-dl dt[onclick]:hover{text-decoration:underline}
+.help-dl dt[onclick]::after{content:'→';font-size:.75rem;opacity:.5}
+.help-dl dd{margin:2px 0 0;font-size:.8rem;color:var(--txt3);line-height:1.5}
 .mt{margin-top:14px}
 
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.03em;white-space:nowrap}
@@ -260,6 +267,8 @@ textarea.code-in:focus{border-color:var(--accent2)}
     <div class="nav-label">Governance</div>
     <a href="#nist" data-view="nist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7z"/><path d="M9 12h6M12 9v6"/></svg>NIST Governance Center</a>
     <a href="#audit" data-view="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h4"/></svg>Evidence &amp; Audit Trail</a>
+    <div class="nav-label">Support</div>
+    <a href="#help" data-view="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>Help &amp; Docs</a>
   </nav>
   <div class="sidebar-foot">Engine <b id="engine-name">local heuristics (offline)</b><br>Policy pack <b>v2026.07 · 148 rules</b><br><span class="badge b-ok pulse" id="gate-badge" style="margin-top:6px">STATIC DEMO</span></div>
 </aside>
@@ -463,6 +472,93 @@ textarea.code-in:focus{border-color:var(--accent2)}
         <thead><tr><th>Timestamp</th><th>Trigger</th><th>Repo / subject</th><th>Policy</th><th>Decision</th><th>Approver</th><th>Evidence</th></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+  </section>
+
+  <!-- ======================= HELP & DOCS ======================= -->
+  <section class="view" id="view-help">
+    <div class="page-head">
+      <div><h1>Help &amp; Docs</h1><p>How GuardAgent Control Plane works, what each module does, and how the scoring gate reaches a decision. Everything here reflects the live engine, not marketing copy.</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost sm" onclick="go('inspect');toast('Paste code and run a live scan.')">Open Inspection studio</button>
+        <a class="btn ghost sm" href="https://github.com/wecanmoove/guardagent-control-plane" target="_blank" rel="noopener">GitHub repo ↗</a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px;border-color:color-mix(in srgb,var(--accent) 30%,var(--line))">
+      <h3>⚡ Quick start</h3>
+      <ol style="margin:0;padding-left:20px;font-size:.86rem;line-height:1.7;color:var(--txt2)">
+        <li>Go to <b>AI Code Inspection</b> and pick a demo sample (or paste your own code, diff, Dockerfile or CI file).</li>
+        <li>Click <b>Run deep analysis</b>. The engine runs 7 layers, then returns a verdict: <b>Allow / Review / Block / Quarantine</b>.</li>
+        <li>When served from the backend, the verdict is confirmed by <b>Gemini 2.5&nbsp;Flash</b> and written to the <b>Evidence &amp; Audit Trail</b> with an <span class="mono">EV-…</span> id.</li>
+        <li>Review governance in <b>NIST Governance Center</b>; export the trail for auditors from <b>Evidence &amp; Audit Trail</b>.</li>
+      </ol>
+    </div>
+
+    <div class="grid g2" style="align-items:start">
+      <div class="card">
+        <h3>🧭 The 8 modules</h3>
+        <dl class="help-dl">
+          <dt onclick="go('dashboard')">Executive Dashboard</dt><dd>Posture score, scan volume, blocked pipelines, SLA debt and a prioritized feed of the latest critical events.</dd>
+          <dt onclick="go('triage')">Commit Risk Triage</dt><dd>Incoming commits ranked by composite risk. Click a row for the diff, triggered rules, MITRE ATT&amp;CK mapping and the recommended decision.</dd>
+          <dt onclick="go('inspect')">AI Code Inspection</dt><dd>The live analysis studio. Deterministic engine + Gemini reasoning → an explained Allow/Review/Block/Quarantine verdict.</dd>
+          <dt onclick="go('gates')">Pipeline Gate Center</dt><dd>Every CI/CD stage with its status and the reason a pipeline was blocked — policy-as-code meets AI reasoning.</dd>
+          <dt onclick="go('agents')">Agent Security Console</dt><dd>AI agents as monitored actors: each tool call is evaluated by policy before it runs (Allow / Sandbox / Escalate / Deny).</dd>
+          <dt onclick="go('exposure')">Threat &amp; Exposure Watch</dt><dd>Operational exposure beyond code: internet surface, KEV, ransomware-linked alerts, patch debt and backup assurance.</dd>
+          <dt onclick="go('nist')">NIST Governance Center</dt><dd>Each finding mapped to NIST CSF 2.0 (Govern/Identify/Protect/Detect/Respond/Recover) with owner, SLA and evidence.</dd>
+          <dt onclick="go('audit')">Evidence &amp; Audit Trail</dt><dd>Immutable, exportable log of every decision — built for internal audit, compliance and CISO reporting.</dd>
+        </dl>
+      </div>
+
+      <div class="grid" style="gap:14px">
+        <div class="card">
+          <h3>🎯 How the gate decides</h3>
+          <p style="font-size:.84rem;color:var(--txt2);margin:0 0 10px">Findings feed a composite score across six axes. The decision is driven by the number and class of findings, not just the total:</p>
+          <table style="width:100%;font-size:.78rem">
+            <thead><tr><th style="text-align:left">Verdict</th><th style="text-align:left">Triggered when</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge v-quarantine">QUARANTINE</span></td><td>≥2 critical, or a critical supply-chain / exfiltration signal — artifact is isolated from any build.</td></tr>
+              <tr><td><span class="badge v-block">BLOCK</span></td><td>≥1 critical finding, or composite risk ≥ 55 — merge blocked pending fix.</td></tr>
+              <tr><td><span class="badge v-review">REVIEW</span></td><td>≥1 high finding, or accumulated mediums (risk ≥ 25) — human review required.</td></tr>
+              <tr><td><span class="badge v-allow">ALLOW</span></td><td>Only low-impact hygiene findings, or nothing detected — allowed with annotations.</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.76rem;color:var(--txt3);margin:10px 0 0">Axes: code · supply chain · exfiltration · exposure · AI-agent · business urgency.</p>
+        </div>
+        <div class="card">
+          <h3>🛡️ Detection coverage</h3>
+          <div id="help-coverage" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <p style="font-size:.76rem;color:var(--txt3);margin:10px 0 0">36 deterministic rules across these classes, each mapped to MITRE ATT&amp;CK where applicable, plus a Gemini intent pass on top.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2 mt" style="align-items:start">
+      <div class="card">
+        <h3>🤖 Engine &amp; Gemini status</h3>
+        <div id="help-engine" style="font-size:.84rem;line-height:1.8;color:var(--txt2)">Checking backend…</div>
+        <p style="font-size:.76rem;color:var(--txt3);margin:10px 0 0">Open the HTML file directly and the studio uses the in-browser analyzer. Serve it from the FastAPI backend with a <span class="mono">GEMINI_API_KEY</span> (or Vertex AI) and verdicts are confirmed by <span class="mono">gemini-2.5-flash</span> and persisted.</p>
+      </div>
+      <div class="card">
+        <h3>⌨️ Shortcuts &amp; tips</h3>
+        <dl class="help-dl">
+          <dt style="cursor:default"><span class="mono">Esc</span></dt><dd>Close the detail drawer.</dd>
+          <dt style="cursor:default">Global search</dt><dd>Type in the top search box to filter commits in Triage instantly.</dd>
+          <dt style="cursor:default">Theme</dt><dd>Toggle dark/light with the ◐ button in the header; your choice is remembered.</dd>
+          <dt style="cursor:default">Deep-link</dt><dd>Every module has a URL hash (e.g. <span class="mono">#agents</span>) you can bookmark or share.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h3>❓ FAQ</h3>
+      <dl class="help-dl">
+        <dt style="cursor:default">Is the analysis real or simulated?</dt><dd>The <b>analysis engine, Gemini reasoning, agent policy and audit trail are real</b> and computed live. The dashboard KPIs (posture score, weekly counts) are credible demo data for presentation.</dd>
+        <dt style="cursor:default">Is this safe to run against real code?</dt><dd>Yes — it performs static pattern analysis only. It never executes the code it inspects. Use it for defensive security testing and secure development.</dd>
+        <dt style="cursor:default">What happens to a leaked secret I paste?</dt><dd>It is scanned in-process and, if backend-served, a redacted finding + evidence id is stored locally in SQLite. Nothing is sent anywhere except (optionally) to Gemini for reasoning. Still, always rotate any real secret that leaks.</dd>
+        <dt style="cursor:default">How do I connect Gemini?</dt><dd>Set <span class="mono">GEMINI_API_KEY</span>, or <span class="mono">GOOGLE_GENAI_USE_VERTEXAI=true</span> on Cloud Run, then restart the server. The sidebar badge flips to <b>GEMINI LIVE</b>.</dd>
+      </dl>
+      <p style="font-size:.78rem;color:var(--txt3);margin:12px 0 0">Full docs, deployment script and the hackathon submission dossier live in the <a href="https://github.com/wecanmoove/guardagent-control-plane" target="_blank" rel="noopener" style="color:var(--accent)">GitHub repository</a>.</p>
     </div>
   </section>
 
@@ -1093,7 +1189,7 @@ document.querySelectorAll('table').forEach(tbl=>{
 });
 
 /* ---------- navigation / shell ---------- */
-const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',audit:'Evidence & Audit Trail'};
+const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',audit:'Evidence & Audit Trail',help:'Help & Docs'};
 function go(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
@@ -1139,8 +1235,38 @@ $('#global-search').addEventListener('input',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 
+/* ---------- help view ---------- */
+function renderHelp(){
+  const cov=[
+    ['Hardcoded secrets','crit','GitLab, AWS, Google, GitHub, Stripe, Slack, Twilio/SendGrid, JWT, PEM keys'],
+    ['Dependency confusion','crit','typosquatted & non-registry (Git/HTTP) packages'],
+    ['Code injection','crit','eval/exec on input, SQL string-building, OS command injection'],
+    ['Data exfiltration','crit','os.environ / .env read + outbound send'],
+    ['Obfuscation','high','base64/hex payloads, decode-and-run'],
+    ['Unsafe deserialization','high','pickle / yaml.load / marshal'],
+    ['Transport & crypto','high','TLS verify=False, weak hashing, insecure randomness'],
+    ['Exposure / misconfig','high','debug on 0.0.0.0, permissive CORS, path traversal, SSRF'],
+    ['CI policy drift','high','allow_failure, when: always, remote build scripts'],
+    ['Fragile containers','med','unpinned base, USER root, chmod 777, SSH exposed'],
+    ['AI-agent risk','high','indirect prompt injection, guardrail-weakening language'],
+  ];
+  const cls={crit:'b-crit',high:'b-med',med:'b-low'};
+  $('#help-coverage').innerHTML=cov.map(([n,s,t])=>`<span class="badge ${cls[s]}" title="${t}">${n}</span>`).join('');
+  // live engine / Gemini status
+  const box=$('#help-engine');
+  fetch('/health',{signal:AbortSignal.timeout(2500)}).then(r=>r.ok?r.json():Promise.reject()).then(h=>{
+    box.innerHTML=`<div>Backend: <b style="color:var(--ok)">connected</b> · model <span class="mono">${h.model}</span></div>
+      <div>Gemini reasoning: <b style="color:${h.gemini?'var(--ok)':'var(--warn)'}">${h.gemini?'LIVE':'deterministic fallback (no key set)'}</b></div>
+      <div>Scans recorded: <b>${h.scans}</b> · blocked: <b>${h.blocked}</b> · agent actions: <b>${h.agent_actions}</b> · denied: <b>${h.denied}</b></div>`;
+  }).catch(()=>{
+    box.innerHTML=`<div>Backend: <b style="color:var(--warn)">not connected</b> — running as a static file.</div>
+      <div>The Inspection studio uses the in-browser analyzer; verdicts are computed locally and not persisted.</div>
+      <div style="color:var(--txt3);margin-top:4px">Serve with <span class="mono">uvicorn backend.main:app</span> to enable Gemini + audit persistence.</div>`;
+  });
+}
+
 /* initial render */
-renderDashboard();renderTriage();renderGates();renderAgents();renderExposure();renderNist();renderAudit();
+renderDashboard();renderTriage();renderGates();renderAgents();renderExposure();renderNist();renderAudit();renderHelp();
 go(location.hash.slice(1)||'dashboard');
 window.addEventListener('resize',()=>renderDashboard());
 </script>
