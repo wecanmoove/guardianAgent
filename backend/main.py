@@ -19,7 +19,7 @@ from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
-from . import store, analyzer, gemini, agent_policy
+from . import store, analyzer, gemini, agent_policy, kev
 
 app = FastAPI(title="GuardAgent Control Plane", version="2.0.0")
 store.init_db()
@@ -132,6 +132,23 @@ async def api_audit(limit: int = 200):
 @app.get("/api/stats")
 async def api_stats():
     return store.stats()
+
+
+@app.get("/api/kev")
+async def api_kev(limit: int = 40, cat: str | None = None, ransomware: bool = False):
+    """Live CISA KEV catalog, classified by DB engine / OS layer.
+
+    Powers the Threat & Exposure Watch module. Cached server-side (6h)."""
+    data = kev.get_kev()
+    entries = data.get("entries", [])
+    if cat:
+        entries = [e for e in entries if e["cat"] == cat]
+    if ransomware:
+        entries = [e for e in entries if e["ransomware"]]
+    return {**{k: data[k] for k in ("ok", "error", "total", "catalogVersion", "counts")},
+            "dateReleased": data.get("dateReleased"),
+            "stale": data.get("stale", False),
+            "entries": entries[:max(1, min(limit, 200))]}
 
 
 @app.post("/scan")

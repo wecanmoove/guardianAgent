@@ -418,8 +418,27 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <section class="view" id="view-exposure">
     <div class="page-head">
       <div><h1>Threat &amp; Exposure Watch</h1><p>Security does not stop at the diff. Internet exposure, KEV-listed vulnerabilities, patch debt and backup integrity weigh on the same posture score as code findings.</p></div>
-      <button class="btn ghost sm" onclick="toast('External attack-surface re-scan scheduled (next window: 02:00 UTC).')">Re-scan surface</button>
+      <button class="btn ghost sm" onclick="renderKEV(true)">↻ Refresh KEV feed</button>
     </div>
+
+    <!-- Live CISA KEV intelligence -->
+    <div class="card" style="margin-bottom:14px;border-color:color-mix(in srgb,var(--crit) 22%,var(--line))">
+      <h3 style="display:flex;align-items:center;gap:8px">
+        <span class="badge b-crit pulse" style="letter-spacing:.06em">EXPLOITED IN THE WILD</span>
+        Live CISA Known-Exploited-Vulnerabilities catalog
+        <span id="kev-src" class="dim mono" style="margin-left:auto;font-size:.68rem;font-weight:400">connecting…</span>
+      </h3>
+      <div class="grid g4" id="kev-tiles" style="margin-bottom:14px"></div>
+      <div class="controls" id="kev-controls" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <button class="btn ghost sm kevf active" data-kf="all">All</button>
+        <button class="btn ghost sm kevf" data-kf="db">Database</button>
+        <button class="btn ghost sm kevf" data-kf="os">OS / infra</button>
+        <button class="btn ghost sm kevf" data-kf="ransom">Ransomware-linked</button>
+        <button class="btn ghost sm kevf" data-kf="new">Added ≤ 7 days</button>
+      </div>
+      <div id="kev-feed"><div class="dim" style="padding:20px;text-align:center">Loading live data from CISA…</div></div>
+    </div>
+
     <div class="grid g4" id="exp-kpis"></div>
     <div class="grid g2 mt">
       <div class="card">
@@ -427,8 +446,8 @@ textarea.code-in:focus{border-color:var(--accent2)}
         <div id="exp-services"></div>
       </div>
       <div class="card">
-        <h3>KEV &amp; ransomware-linked alerts</h3>
-        <div id="kev-list"></div>
+        <h3>Ransomware-linked KEV · nearest remediation deadlines</h3>
+        <div id="kev-list"><div class="dim" style="font-size:.75rem">Loading from live catalog…</div></div>
       </div>
     </div>
     <div class="grid g2 mt">
@@ -1141,14 +1160,84 @@ function renderExposure(){
   $('#exp-services').innerHTML=DB.expServices.map(s=>{const col=s.risk>=75?'var(--crit)':s.risk>=45?'var(--warn)':'var(--ok)';
     return `<div class="exp-row"><div style="flex:1;min-width:0"><div style="font-size:.79rem">${s.name}</div><div class="dim" style="font-size:.7rem">${s.note}</div></div>
     <span class="meter" style="max-width:120px"><i style="width:${s.risk}%;background:${col}"></i></span><span class="mono" style="color:${col};min-width:26px;text-align:right">${s.risk}</span></div>`;}).join('');
-  $('#kev-list').innerHTML=DB.kev.map(k=>`<div class="exp-row"><div style="flex:1"><div style="font-size:.8rem"><b class="mono">${k.cve}</b> · ${k.asset} <span class="badge ${k.sev==='crit'?'b-crit':k.sev==='high'?'b-high':'b-med'}">${k.tag}</span></div><div class="dim" style="font-size:.71rem;margin-top:2px">${k.note}</div></div></div>`).join('');
   $('#patch-state').innerHTML=DB.patch.map(p=>`<div class="sb" style="margin-bottom:9px"><span>${p.name}</span><span class="track"><span class="fill" style="width:${p.pct}%;background:${p.color}"></span></span><span class="num">${p.pct}%</span></div>`).join('');
   $('#backup-state').innerHTML=DB.backup.map(b=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:.8rem">${b.name}</b><span class="badge ${b.cls}">${b.status}</span></div>
     <div class="dim" style="font-size:.72rem;margin-top:3px">${b.detail}</div></div>`).join('');
 }
 
-/* ---------- nist ---------- */
+/* ---------- live CISA KEV feed (Threat & Exposure Watch) ---------- */
+let KEV={entries:[],counts:{},filter:'all'};
+const KEV_ENGINE={mssql:'SQL Server / MS',oracle:'Oracle DB / stack',mysql:'MySQL / MariaDB',os:'OS / hypervisor'};
+async function renderKEV(force){
+  const feed=$('#kev-feed'),src=$('#kev-src');
+  if(force){feed.innerHTML='<div class="dim" style="padding:20px;text-align:center">Refreshing from CISA…</div>';src.textContent='refreshing…';}
+  try{
+    const r=await fetch('/api/kev?limit=60'+(force?'&_='+Date.now():''),{signal:AbortSignal.timeout(18000)});
+    if(!r.ok)throw new Error('backend '+r.status);
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.error||'feed error');
+    KEV.entries=d.entries;KEV.counts=d.counts;
+    src.innerHTML=`catalog v${esc(d.catalogVersion||'?')} · ${d.total} CVEs · ${KEV.counts.ransomware||0} ransomware-linked${d.stale?' · <span style="color:var(--warn)">cached</span>':''} · source CISA KEV`;
+    // engine tiles
+    const tiles=[['mssql','var(--crit)'],['oracle','var(--warn)'],['mysql','var(--accent)'],['os','#a878ff']];
+    $('#kev-tiles').innerHTML=tiles.map(([k,c])=>`<div class="kpi"><div class="k-label">${KEV_ENGINE[k]}</div>
+      <div class="k-value" style="color:${c}">${KEV.counts[k]??0}</div>
+      <div class="k-delta dim">KEV entries · ${k==='os'?'12 mo':'12 mo'}</div></div>`).join('');
+    drawKEVFeed();
+  }catch(e){
+    // offline / static file — fall back to the curated demo KEV list
+    src.innerHTML='<span style="color:var(--warn)">backend offline</span> · showing curated sample';
+    $('#kev-tiles').innerHTML=[['SQL Server / MS',6,'var(--crit)'],['Oracle DB / stack',8,'var(--warn)'],['MySQL / MariaDB',3,'var(--accent)'],['OS / hypervisor',14,'#a878ff']]
+      .map(([n,v,c])=>`<div class="kpi"><div class="k-label">${n}</div><div class="k-value" style="color:${c}">${v}</div><div class="k-delta dim">curated sample</div></div>`).join('');
+    KEV.entries=DB.kev.map(k=>({cve:k.cve,vendor:k.asset,product:'',name:k.note,desc:k.note,dateAdded:'',dueDate:'',cat:k.sev==='crit'?'db':'os',ransomware:/ransom/i.test(k.tag),fresh:false}));
+    drawKEVFeed();
+  }
+}
+function drawKEVFeed(){
+  const f=KEV.filter;
+  let list=KEV.entries.filter(e=>{
+    if(f==='db')return e.cat==='db';
+    if(f==='os')return e.cat==='os';
+    if(f==='ransom')return e.ransomware;
+    if(f==='new')return e.fresh;
+    return true;
+  });
+  if(!list.length){$('#kev-feed').innerHTML='<div class="dim" style="padding:20px;text-align:center">No catalog entries match this filter.</div>';return;}
+  $('#kev-feed').innerHTML=list.slice(0,40).map(e=>{
+    const ec=e.cat==='db'?'var(--accent)':e.cat==='os'?'#a878ff':'var(--line)';
+    return `<div class="exp-row" style="border-left:3px solid ${ec};padding-left:10px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.8rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <a class="mono" style="color:var(--warn)" href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(e.cve||'')}" target="_blank" rel="noopener">${esc(e.cve||'—')}</a>
+          <b>${esc(e.vendor||'')}${e.product?' · '+esc(e.product):''}</b>
+          ${e.ransomware?'<span class="badge b-crit">☠ RANSOMWARE</span>':''}
+          ${e.fresh?'<span class="badge b-med">★ NEW</span>':''}
+          <span class="badge ${e.cat==='db'?'b-accent':e.cat==='os'?'b-quar':'b-neutral'}">${e.cat==='db'?'DATABASE':e.cat==='os'?'OS / INFRA':'OTHER'}</span>
+        </div>
+        <div class="dim" style="font-size:.72rem;margin-top:3px">${esc(e.desc||e.name||'')}</div>
+        ${e.dueDate?`<div class="dim mono" style="font-size:.68rem;margin-top:2px">added ${esc(e.dateAdded||'')} · remediation due ${esc(e.dueDate)}</div>`:''}
+      </div></div>`;
+  }).join('');
+  drawKEVList();
+}
+function drawKEVList(){
+  const el=$('#kev-list');if(!el)return;
+  const ransom=KEV.entries.filter(e=>e.ransomware);
+  const withDue=ransom.filter(e=>e.dueDate).sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  const list=(withDue.length?withDue:ransom).slice(0,8);
+  if(!list.length){el.innerHTML='<div class="dim" style="font-size:.75rem">No ransomware-linked KEV entries in the current catalog window.</div>';return;}
+  el.innerHTML=list.map(e=>`<div class="exp-row"><div style="flex:1;min-width:0">
+    <div style="font-size:.78rem"><a class="mono" style="color:var(--warn)" href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(e.cve||'')}" target="_blank" rel="noopener">${esc(e.cve||'—')}</a> · ${esc(e.vendor||'')}</div>
+    <div class="dim" style="font-size:.7rem;margin-top:2px">${esc((e.desc||e.name||'').slice(0,110))}</div></div>
+    <span class="badge b-crit" style="white-space:nowrap">${e.dueDate?'due '+esc(e.dueDate):'☠'}</span></div>`).join('');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.kevf');if(!b)return;
+  document.querySelectorAll('.kevf').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');KEV.filter=b.dataset.kf;drawKEVFeed();
+});
+
 function renderNist(){
   $('#nist-band').innerHTML=DB.nistFns.map(f=>{const col=f.score>=80?'var(--ok)':f.score>=68?'var(--warn)':'var(--crit)';
     return `<div class="nist-fn"><div class="n-code">CSF 2.0 · ${f.code}</div><div class="n-name">${f.name}</div><div class="n-score" style="color:${col}">${f.score}</div><div class="n-open">${f.open} open item${f.open!==1?'s':''}</div></div>`;}).join('');
@@ -1198,6 +1287,7 @@ function go(view){
   document.getElementById('sidebar').classList.remove('open');
   if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);
   window.scrollTo({top:0});
+  if(view==='exposure'&&!KEV.loaded){KEV.loaded=true;renderKEV();}
 }
 document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a.dataset.view);}));
 window.addEventListener('hashchange',()=>go(location.hash.slice(1)||'dashboard'));
