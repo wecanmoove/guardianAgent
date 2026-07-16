@@ -86,6 +86,10 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system
 .help-dl dt[onclick]:hover{text-decoration:underline}
 .help-dl dt[onclick]::after{content:'→';font-size:.75rem;opacity:.5}
 .help-dl dd{margin:2px 0 0;font-size:.8rem;color:var(--txt3);line-height:1.5}
+.orma-tests{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:4px}
+.orma-test{display:flex;gap:8px;align-items:flex-start;font-size:.76rem;color:var(--txt2);cursor:pointer;line-height:1.4}
+.orma-test input{margin-top:2px;accent-color:var(--accent);cursor:pointer;flex:none}
+.orma-test:hover{color:var(--txt)}
 .mt{margin-top:14px}
 
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.03em;white-space:nowrap}
@@ -266,6 +270,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
     <a href="#exposure" data-view="exposure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>Threat &amp; Exposure Watch</a>
     <div class="nav-label">Governance</div>
     <a href="#nist" data-view="nist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7z"/><path d="M9 12h6M12 9v6"/></svg>NIST Governance Center</a>
+    <a href="#resilience" data-view="resilience"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 9 9M3 12a9 9 0 0 0 9 9 9 9 0 0 0 9-9M3 12h18M12 3v18"/></svg>Resilience Maturity<span class="badge b-med" id="orma-badge">ORMA</span></a>
     <a href="#audit" data-view="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h4"/></svg>Evidence &amp; Audit Trail</a>
     <div class="nav-label">Support</div>
     <a href="#help" data-view="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>Help &amp; Docs</a>
@@ -474,6 +479,31 @@ textarea.code-in:focus{border-color:var(--accent2)}
         <thead><tr><th>Finding</th><th>CSF 2.0 function</th><th>Category</th><th>Owner</th><th>SLA</th><th>Evidence</th><th>Status</th></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+  </section>
+
+  <!-- ========== RESILIENCE MATURITY (ORMA) ========== -->
+  <section class="view" id="view-resilience">
+    <div class="page-head">
+      <div><h1>Resilience Maturity — ORMA</h1><p>Operational Resilience Maturity Assessment across 10 domains, on a 5-level scale. Run the tests per domain: check the criteria you meet, and the maturity level, gap-to-target and roadmap update live. Modelled on the CDPQ operational-resilience framework.</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost sm" onclick="resetOrma()">Reset</button>
+        <button class="btn ghost sm" onclick="exportOrma()">Export assessment</button>
+      </div>
+    </div>
+    <div class="grid g4" id="orma-kpis" style="margin-bottom:14px"></div>
+    <div class="grid g23" style="align-items:start">
+      <div id="orma-domains" class="grid" style="gap:12px"></div>
+      <div class="grid" style="gap:14px">
+        <div class="card">
+          <h3>Maturity scale</h3>
+          <div id="orma-scale"></div>
+        </div>
+        <div class="card">
+          <h3>Roadmap — largest gaps first</h3>
+          <div id="orma-roadmap"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -811,6 +841,38 @@ const DB = {
     {finding:'Weak admin account on legacy-ftp-01', fn:'Protect', cat:'PR.AA — Identity & credentials', owner:'IT Ops', sla:'3 d remaining', evidence:'—', status:'Exception requested', cls:'b-med'},
     {finding:'CI security gate made non-blocking', fn:'Govern', cat:'GV.PO — Policy', owner:'S. Haddad', sla:'3 d remaining', evidence:'EV-88408', status:'Under review', cls:'b-med'},
     {finding:'pickle deserialization in auth-gateway', fn:'Protect', cat:'PR.PS — Platform security', owner:'S. Haddad', sla:'exception EX-091 to 2026-08-15', evidence:'EV-88355', status:'Exception granted', cls:'b-neutral'},
+  ],
+  // ORMA — Operational Resilience Maturity Assessment (10 domains, 5-level scale).
+  // Modelled on the CDPQ operational-resilience maturity framework. Each domain
+  // carries a set of assessment criteria ("tests"); checking them sets the level.
+  ormaLevels: [
+    {n:1, name:'Ad hoc', desc:'Isolated, inconsistent, generally below industry expectations.'},
+    {n:2, name:'De base', desc:'Agreed critical services and ownership; foundational programme in place.'},
+    {n:3, name:'Intermédiaire', desc:'Repeatable, consistent and appropriately frequent across domains.'},
+    {n:4, name:'Avancé', desc:'Proactive monitoring, tested, integrated across the enterprise.'},
+    {n:5, name:'Optimisé', desc:'Continuously improved, data-driven, an industry reference.'},
+  ],
+  orma: [
+    {id:'D1', name:'Cadre du risque opérationnel', en:'Operational risk framework', target:4, nist:'GV.RM',
+     tests:['Resilience framework formally defined and owned','Operational-risk taxonomy covers resilience','Board-level reporting on operational resilience']},
+    {id:'D2', name:'Structure et capacité', en:'Structure & capacity', target:4, nist:'GV.RR',
+     tests:['Clear resilience roles and accountabilities','Dedicated resilience function/capacity','Skills and headcount matched to critical services']},
+    {id:'D3', name:'Gouvernance et gestion des risques', en:'Governance & risk management', target:4, nist:'GV.PO',
+     tests:['Risk appetite for disruption is defined','Impact tolerances set per critical service','Governance forums review resilience regularly']},
+    {id:'D4', name:'Outillage et services essentiels', en:'Tooling & essential services', target:4, nist:'ID.AM',
+     tests:['Critical business services inventoried','Service criticality tiering agreed enterprise-wide','Supporting assets mapped to each service']},
+    {id:'D5', name:'Architecture processus & technologies', en:'Process & technology architecture', target:4, nist:'PR.IR',
+     tests:['End-to-end service dependency mapping','Single points of failure identified','Resilience patterns (redundancy/failover) designed in']},
+    {id:'D6', name:'Gestion & opérations IT', en:'IT service management & operations', target:4, nist:'PR.PS',
+     tests:['Change/incident/problem processes mature','Monitoring covers critical service health','Recovery runbooks maintained and current']},
+    {id:'D7', name:'Approvisionnement & dépendances', en:'Sourcing & internal dependencies', target:3, nist:'ID.SC',
+     tests:['Third-party/internal dependencies mapped','Concentration & exit risk assessed','Supplier resilience obligations contracted']},
+    {id:'D8', name:'Cybersécurité & vulnérabilités', en:'Cybersecurity & vulnerability mgmt', target:4, nist:'PR/DE',
+     tests:['Vulnerability & patch SLAs enforced','KEV/exposure monitored continuously','Security integrated into the delivery gate']},
+    {id:'D9', name:'Gestion des crises & incidents', en:'Crisis & incident management', target:4, nist:'RS.MA',
+     tests:['Crisis management plan tested via exercises','Severity/escalation criteria defined','Post-incident learning loop closes actions']},
+    {id:'D10', name:'Gestion de la continuité', en:'Business continuity management', target:4, nist:'RC.RP',
+     tests:['BIA drives RTO/RPO per service','Continuity & recovery plans regularly tested','Backups verified by restore testing']},
   ],
   audit: [
     {ts:'2026-07-07 14:52:09Z', trig:'agent tool call', subj:'deploy-agent-02 · run_shell', policy:'POL-AGT-011', decision:'Denied', approver:'— (automatic)', ev:'EV-88441'},
@@ -1278,7 +1340,7 @@ document.querySelectorAll('table').forEach(tbl=>{
 });
 
 /* ---------- navigation / shell ---------- */
-const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',audit:'Evidence & Audit Trail',help:'Help & Docs'};
+const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',resilience:'Resilience Maturity — ORMA',audit:'Evidence & Audit Trail',help:'Help & Docs'};
 function go(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
@@ -1356,7 +1418,77 @@ function renderHelp(){
 }
 
 /* initial render */
-renderDashboard();renderTriage();renderGates();renderAgents();renderExposure();renderNist();renderAudit();renderHelp();
+/* ---------- resilience maturity (ORMA) ---------- */
+let ormaState={};
+function ormaLoad(){
+  try{const s=JSON.parse(localStorage.getItem('ga-orma')||'{}');ormaState=s&&typeof s==='object'?s:{};}catch(e){ormaState={};}
+  DB.orma.forEach(d=>{if(!Array.isArray(ormaState[d.id])||ormaState[d.id].length!==d.tests.length)ormaState[d.id]=d.tests.map(()=>false);});
+}
+function ormaSave(){try{localStorage.setItem('ga-orma',JSON.stringify(ormaState));}catch(e){}}
+function ormaLevel(d){return 1+ormaState[d.id].filter(Boolean).length;} // 3 criteria -> levels 1..4
+const ORMA_COL=l=>l>=4?'var(--ok)':l>=3?'var(--accent)':l>=2?'var(--warn)':'var(--crit)';
+function toggleOrma(did,idx){
+  const d=DB.orma.find(x=>x.id===did);ormaState[did][idx]=!ormaState[did][idx];ormaSave();renderResilience();
+  toast(`${d.id} ${d.name} → level ${ormaLevel(d)}/5 (${DB.ormaLevels[ormaLevel(d)-1].name})`);
+}
+function resetOrma(){DB.orma.forEach(d=>ormaState[d.id]=d.tests.map(()=>false));ormaSave();renderResilience();toast('Assessment reset.');}
+function exportOrma(){
+  const rows=DB.orma.map(d=>({domain:d.name,en:d.en,nist:d.nist,level:ormaLevel(d),levelName:DB.ormaLevels[ormaLevel(d)-1].name,target:d.target,gap:Math.max(0,d.target-ormaLevel(d)),criteriaMet:ormaState[d.id].filter(Boolean).length+'/'+d.tests.length}));
+  const avg=(DB.orma.reduce((s,d)=>s+ormaLevel(d),0)/DB.orma.length);
+  const payload={framework:'ORMA — Operational Resilience Maturity',generated:new Date().toISOString(),overallMaturity:+avg.toFixed(2),domains:rows};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download='guardagent-resilience-maturity.json';a.click();URL.revokeObjectURL(u);
+  toast('Resilience assessment exported.');
+}
+function renderResilience(){
+  const avg=DB.orma.reduce((s,d)=>s+ormaLevel(d),0)/DB.orma.length;
+  const tavg=DB.orma.reduce((s,d)=>s+d.target,0)/DB.orma.length;
+  const below=DB.orma.filter(d=>ormaLevel(d)<d.target).length;
+  const atAbove=DB.orma.length-below;
+  $('#orma-kpis').innerHTML=[
+    {l:'Overall maturity',v:avg.toFixed(1)+' / 5',d:DB.ormaLevels[Math.max(0,Math.round(avg)-1)].name,col:ORMA_COL(avg)},
+    {l:'Target maturity',v:tavg.toFixed(1)+' / 5',d:'weighted across 10 domains',col:'var(--accent)'},
+    {l:'Domains at / above target',v:atAbove+' / '+DB.orma.length,d:'meeting resilience target',col:atAbove>=7?'var(--ok)':'var(--warn)'},
+    {l:'Domains below target',v:String(below),d:below?'remediation required':'all targets met',col:below?'var(--crit)':'var(--ok)'},
+  ].map(k=>`<div class="kpi"><div class="k-label">${k.l}</div><div class="k-value" style="color:${k.col}">${k.v}</div><div class="k-delta dim">${k.d}</div></div>`).join('');
+
+  $('#orma-domains').innerHTML=DB.orma.map(d=>{
+    const lv=ormaLevel(d),gap=Math.max(0,d.target-lv),col=ORMA_COL(lv);
+    const pills=DB.ormaLevels.map(L=>`<span title="${esc(L.name)}: ${esc(L.desc)}" style="flex:1;height:6px;border-radius:3px;background:${L.n<=lv?col:'var(--line)'}"></span>`).join('');
+    const tests=d.tests.map((t,i)=>`<label class="orma-test"><input type="checkbox" ${ormaState[d.id][i]?'checked':''} onchange="toggleOrma('${d.id}',${i})"> <span>${esc(t)}</span></label>`).join('');
+    return `<div class="card" style="padding:14px">
+      <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
+        <b style="font-size:.9rem">${esc(d.name)}</b><span class="dim" style="font-size:.72rem">${esc(d.en)}</span>
+        <span class="badge b-neutral mono" style="margin-left:auto">${esc(d.nist)}</span>
+        <span class="badge" style="background:color-mix(in srgb,${col} 18%,transparent);color:${col};border:1px solid ${col}">L${lv} · ${esc(DB.ormaLevels[lv-1].name)}</span>
+      </div>
+      <div style="display:flex;gap:4px;margin:10px 0 8px">${pills}</div>
+      <div style="display:flex;justify-content:space-between;font-size:.72rem" class="dim">
+        <span>Target: L${d.target} · ${esc(DB.ormaLevels[d.target-1].name)}</span>
+        <span style="color:${gap?'var(--crit)':'var(--ok)'}">${gap?('gap '+gap+' level'+(gap>1?'s':'')):'✓ target met'}</span>
+      </div>
+      <div class="orma-tests">${tests}</div>
+    </div>`;
+  }).join('');
+
+  $('#orma-scale').innerHTML=DB.ormaLevels.map(L=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)">
+    <span class="badge" style="background:color-mix(in srgb,${ORMA_COL(L.n)} 18%,transparent);color:${ORMA_COL(L.n)};border:1px solid ${ORMA_COL(L.n)};align-self:flex-start">L${L.n}</span>
+    <div><b style="font-size:.8rem">${esc(L.name)}</b><div class="dim" style="font-size:.72rem">${esc(L.desc)}</div></div></div>`).join('');
+
+  const gaps=DB.orma.map(d=>({d,gap:Math.max(0,d.target-ormaLevel(d)),lv:ormaLevel(d)})).filter(x=>x.gap>0).sort((a,b)=>b.gap-a.gap);
+  $('#orma-roadmap').innerHTML=gaps.length?gaps.map(x=>{
+    const next=x.d.tests.findIndex((t,i)=>!ormaState[x.d.id][i]);
+    return `<div style="padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="font-size:.8rem"><b>${esc(x.d.name)}</b> <span class="badge b-crit">+${x.gap}</span></div>
+      <div class="dim" style="font-size:.72rem;margin-top:2px">L${x.lv} → L${x.d.target}. Next: ${next>=0?esc(x.d.tests[next]):'validate & optimise'}</div></div>`;
+  }).join(''):'<div style="color:var(--ok);font-size:.8rem;text-align:center;padding:14px">✓ All domains meet their resilience target.</div>';
+
+  const oa=$('#orma-badge');if(oa)oa.textContent=avg.toFixed(1);
+}
+
+/* initial render */
+ormaLoad();
+renderDashboard();renderTriage();renderGates();renderAgents();renderExposure();renderNist();renderAudit();renderHelp();renderResilience();
 go(location.hash.slice(1)||'dashboard');
 window.addEventListener('resize',()=>renderDashboard());
 </script>
