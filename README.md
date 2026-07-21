@@ -4,9 +4,7 @@
 
 **The AI security control plane for the agentic era - code gate, prompt firewall, auto-remediation and audit, powered by OpenAI GPT-5.6.**
 
-GuardAgent Control Plane is the product evolution of [`guard-agent-test`](https://gitlab.com/syntaxsecure-group/guard-agent-test) - a GitLab-webhook DevSecOps bridge - rebuilt as a full **SOC + AppSec + AI Security Gate platform**. Built for the **OpenAI Build Week hackathon** (track: *Developer tools*) - see [`submission/DEVPOST.md`](submission/DEVPOST.md) and [`submission/CODEX_WORK.md`](submission/CODEX_WORK.md) for the new-vs-prior work log.
-
-> For **defensive security testing and product development only**. Dashboard demo data is simulated; the analysis engine, GPT-5.6 reasoning, Prompt Shield, agent policy enforcement and audit persistence are real.
+GuardAgent Control Plane is the product evolution for **defensive security testing and product development only**. Dashboard demo data is simulated; the analysis engine, GPT-5.6 reasoning, Prompt Shield, agent policy enforcement and audit persistence are real.
 
 ## What makes it different
 
