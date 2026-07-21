@@ -1,0 +1,213 @@
+# GuardAgent Control Plane Configuration
+# AI security control plane with OpenAI GPT-5.6 reasoning + deterministic analyzer
+# All settings have sensible defaults; omit to use fallbacks.
+
+version: "1"
+
+# ========== AI Reasoning Engine ==========
+ai:
+  # Primary reasoning model (GPT-5.6 with automatic fallback chain)
+  model: gpt-5.6
+  fallback_models:
+    - gpt-5.6
+    - gpt-5.1
+    - gpt-5
+    - gpt-5-mini
+
+  # Temperature for reasoning (lower = more deterministic)
+  temperature: 0.3
+
+  # Fix engine reasoning temperature (lower = more predictable patches)
+  fix_temperature: 0.2
+
+# ========== Static Analysis (Deterministic) ==========
+scanning:
+  # Pattern sets to activate: all | custom | minimal
+  patterns: all  # 148 deterministic rules across 10 categories
+
+  # Entropy threshold for secret detection
+  entropy_threshold: 4.5
+
+  # Files/dirs to exclude from scanning
+  exclude:
+    - "**/*.lock"
+    - "**/node_modules/**"
+    - "**/vendor/**"
+    - ".git/**"
+    - "tests/fixtures/**"
+    - "**/.venv/**"
+    - "**/__pycache__/**"
+    - "**/dist/**"
+    - "**/build/**"
+
+  # Categories to scan
+  categories:
+    - secrets
+    - dependencies
+    - injection
+    - obfuscation
+    - exfiltration
+    - ci_policy
+    - deserialization
+    - crypto
+
+# ========== Security Gate Decision Logic ==========
+gate:
+  # Gate mode: advisory | warn | hard (blocking)
+  mode: hard
+
+  # Block on this severity or higher
+  block_on_severity: high
+
+  # Quarantine on critical supply-chain findings
+  quarantine_on_supply_chain: true
+
+  # Composite risk threshold for blocking (0-100)
+  block_risk_threshold: 55
+
+  # AI reasoning must hit this confidence before blocking
+  min_confidence_to_block: 0.75
+
+# ========== Pipeline Integration ==========
+pipeline:
+  # Webhook secret for GitLab/GitHub push events (HMAC-SHA256)
+  webhook_secret_env: GUARDAGENT_WEBHOOK_SECRET
+
+  # Stages to monitor in CI/CD
+  stages:
+    - build
+    - unit
+    - sast
+    - deps
+    - deploy
+
+  # Repository patterns to scan (regex)
+  scan_repos: ".*"
+
+  # Protected branches that require human approval for exceptions
+  protected_refs:
+    - main
+    - master
+    - production
+
+# ========== AI Agent Policy Engine ==========
+agents:
+  # Enable agent tool-call evaluation
+  enabled: true
+
+  # Default execution policy: allow | sandbox | deny
+  default_policy: sandbox
+
+  # Tool families to monitor
+  monitor_tools:
+    - shell
+    - kubernetes
+    - git
+    - vault
+    - cloud_storage
+    - database
+
+  # Dangerous tool combinations (detect privilege escalation patterns)
+  escalation_patterns:
+    - ["shell", "vault"]
+    - ["git", "protected_ref"]
+    - ["cloud_storage", "external"]
+
+# ========== Compliance & Governance ==========
+nist:
+  # Profile: starter | enterprise | critical
+  profile: enterprise
+
+  # CSF 2.0 functions to map findings to
+  functions:
+    - govern
+    - identify
+    - protect
+    - detect
+    - respond
+    - recover
+
+resilience:
+  # ORMA (Operational Resilience Maturity Assessment) domain weights
+  domains:
+    risk_framework: 0.12
+    capacity: 0.10
+    governance: 0.15
+    tooling: 0.10
+    architecture: 0.15
+    operations: 0.12
+    sourcing: 0.08
+    cybersecurity: 0.10
+    crisis_mgmt: 0.05
+    continuity: 0.03
+
+  # Target maturity level (1-5)
+  target_level: 4
+
+# ========== Threat Intelligence ==========
+threat_intel:
+  # CISA Known-Exploited-Vulnerabilities feed
+  kev_enabled: true
+  kev_refresh_interval_hours: 1
+
+  # Categories to surface in dashboard
+  kev_categories:
+    - exploited_in_wild
+    - ransomware_linked
+    - added_recently
+
+# ========== Reporting & Audit ==========
+reporting:
+  # Include executive narrative in reports
+  executive_narrative: true
+
+  # Export formats
+  formats:
+    - json
+    - html
+    - sarif
+
+  # Audit trail storage
+  audit_log: true
+  audit_db_path: "./audit.db"
+
+  # Evidence retention (days)
+  evidence_retention_days: 365
+
+# ========== AI Guardrails & Safety ==========
+ai_guardrails:
+  # Enable prompt-injection detection
+  prompt_shield: true
+
+  # Detectors to run
+  detectors:
+    - hijack_detection
+    - exfiltration_detection
+    - smuggling_detection
+    - tool_abuse_detection
+    - persona_jailbreak_detection
+    - reconnaissance_detection
+
+  # Audit all shield evaluations
+  audit_shield_calls: true
+
+# ========== Server & Infrastructure ==========
+server:
+  # API port
+  port: 8147
+
+  # CORS origins
+  cors_origins:
+    - "http://localhost:*"
+    - "http://127.0.0.1:*"
+
+  # Request timeouts (seconds)
+  request_timeout: 30
+  analysis_timeout: 60
+
+# ========== Logging ==========
+logging:
+  level: INFO
+  format: json
+  include_timestamps: true
+  audit_events: true
