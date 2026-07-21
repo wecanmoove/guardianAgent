@@ -5,7 +5,7 @@ findings using OpenAI's GPT-5.6 model.
 
 GPT-5.6 runs as a SECOND pass on top of the deterministic analyzer:
   1. analyzer.py finds keyword/pattern signals (fast, explainable).
-  2. GPT-5.6 reasons about INTENT — is this actually malicious, is it a
+  2. GPT-5.6 reasons about INTENT - is this actually malicious, is it a
      false positive, what is the developer-facing explanation and fix.
 
 If no API key is configured the module degrades gracefully to a
@@ -57,21 +57,21 @@ def _fallback(analysis: dict) -> dict:
 
 FIX_PROMPT = """You are GuardAgent Fix Engine, an autonomous remediation engineer.
 You receive a flagged code/config snippet plus the static-analyzer findings.
-Produce the SAFE version of the code — semantically equivalent business logic
+Produce the SAFE version of the code - semantically equivalent business logic
 with every security defect remediated (secrets moved to env vars, queries
 parameterized, TLS verification restored, eval removed, etc.).
 
 Return STRICT JSON with keys:
   fixed_code: the complete remediated snippet (same language, runnable)
   changes: array of {finding_id, line, before, after, explanation} (<=8 entries)
-  residual_risk: "none" | "low" | "medium" — what a human must still verify
+  residual_risk: "none" | "low" | "medium" - what a human must still verify
   summary: 1-2 sentences describing the remediation
 Do not add features. Do not add prose outside the JSON."""
 
 # Deterministic auto-patches: (finding id prefix, regex, replacement, note)
 _AUTOPATCHES = [
     ("SEC", r"""(?im)^(\s*)((?:api[_-]?key|secret|token|passwd|password)\s*[:=]\s*)["'][^"']{8,}["']""",
-     r"\1\2os.environ[\"GUARDAGENT_SECRET\"]  # moved to env — rotate the leaked value",
+     r"\1\2os.environ[\"GUARDAGENT_SECRET\"]  # moved to env - rotate the leaked value",
      "Credential literal replaced with an environment lookup."),
     ("CRY-002", r"(?i)verify\s*=\s*False", "verify=True",
      "TLS certificate verification restored."),
@@ -125,7 +125,7 @@ def propose_fix(src: str, analysis: dict) -> dict:
     )
     try:
         return llm.complete_json(FIX_PROMPT, user)
-    except Exception as e:  # network / quota / model — never break the gate
+    except Exception as e:  # network / quota / model - never break the gate
         fb = _fix_fallback(src, analysis)
         fb["engine"] = f"{MODEL} (fallback: {type(e).__name__})"
         logger.warning("Fix engine failed: %s: %s", type(e).__name__, e)
@@ -145,7 +145,7 @@ def reason(src: str, analysis: dict) -> dict:
     )
     try:
         return llm.complete_json(SYSTEM_PROMPT, user)
-    except Exception as e:  # model / network / quota — never break the gate
+    except Exception as e:  # model / network / quota - never break the gate
         fb = _fallback(analysis)
         fb["engine"] = f"{MODEL} (fallback: {type(e).__name__})"
         logger.warning("OpenAI reasoning failed: %s: %s", type(e).__name__, e)

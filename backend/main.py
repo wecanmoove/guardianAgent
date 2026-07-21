@@ -1,11 +1,11 @@
-"""GuardAgent Control Plane — FastAPI backend.
+"""GuardAgent Control Plane - FastAPI backend.
 
 Evolution of guard-agent-test's webhook bridge into a full control plane:
-  - keeps the signed GitLab webhook DNA (HMAC-SHA256 verification)
-  - adds a real /api/scan analysis endpoint (deterministic + OpenAI GPT-5.6)
-  - adds an AI-agent policy enforcement endpoint (/api/agent/act)
-  - persists everything to SQLite for the audit trail / judge evidence
-  - serves the single-file dashboard UI
+ - keeps the signed GitLab webhook DNA (HMAC-SHA256 verification)
+ - adds a real /api/scan analysis endpoint (deterministic + OpenAI GPT-5.6)
+ - adds an AI-agent policy enforcement endpoint (/api/agent/act)
+ - persists everything to SQLite for the audit trail / judge evidence
+ - serves the single-file dashboard UI
 
 Run:  uvicorn backend.main:app --reload --port 8080
 """
@@ -125,7 +125,7 @@ async def api_agent_act(req: AgentActRequest):
     """Evaluate an AI agent tool call against execution policy BEFORE it runs."""
     r = agent_policy.evaluate(req.agent, req.action, req.tool)
     store.record_agent_action(req.agent, req.action, req.tool, r.risk, r.policy, r.outcome)
-    store.record_audit("agent tool call", f"{req.agent} · {req.tool}",
+    store.record_audit("agent tool call", f"{req.agent} -  {req.tool}",
                        r.policy.split(" ")[1] if " " in r.policy else "POL-AGT",
                        r.outcome)
     return {"outcome": r.outcome, "policy": r.policy, "risk": r.risk, "cls": r.cls}
@@ -188,7 +188,7 @@ async def api_fix(req: FixRequest):
 
 @app.post("/api/scan/sarif")
 async def api_scan_sarif(req: ScanRequest):
-    """Analyze and return findings as SARIF 2.1.0 — drops into GitHub code
+    """Analyze and return findings as SARIF 2.1.0 - drops into GitHub code
     scanning, VS Code's SARIF viewer, or any SARIF-aware CI pipeline."""
     analysis = analyzer.analyze(req.code)
     return JSONResponse(sarif.to_sarif(analysis, artifact_uri=req.repo or "input.snippet"))
@@ -253,7 +253,7 @@ async def api_kev(limit: int = 40, cat: str | None = None, ransomware: bool = Fa
 
 @app.post("/scan")
 async def scan(request: Request, background_tasks: BackgroundTasks):
-    """GitLab webhook entry point (HMAC-verified) — the original DNA, now
+    """GitLab webhook entry point (HMAC-verified) - the original DNA, now
     routed through the full control-plane pipeline."""
     secret = GITLAB_WEBHOOK_SECRET
     if not secret:

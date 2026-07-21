@@ -2,7 +2,7 @@
 
 Every scan, finding, agent action and audit record is persisted so the
 platform can produce the execution evidence the XPRIZE judges ask for
-("agent execution logs, API usage records"). Pure stdlib — no ORM.
+("agent execution logs, API usage records"). Pure stdlib - no ORM.
 """
 import json
 import os
@@ -111,7 +111,7 @@ def list_agent_actions(limit: int = 100) -> list[dict]:
 
 
 def record_audit(trigger_kind: str, subject: str, policy: str,
-                 decision: str, approver: str = "— (automatic)") -> str:
+                 decision: str, approver: str = " -  (automatic)") -> str:
     with _conn() as con:
         cur = con.execute(
             "INSERT INTO audit (ts, trigger_kind, subject, policy, decision, approver, evidence)"

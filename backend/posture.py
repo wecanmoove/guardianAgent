@@ -1,4 +1,4 @@
-"""Security Posture Score — one number the CISO can watch.
+"""Security Posture Score - one number the CISO can watch.
 
 Aggregates every signal the platform already produces into a 0-100 score
 with a letter grade and per-pillar breakdown:
@@ -8,7 +8,7 @@ with a letter grade and per-pillar breakdown:
   shield coverage      prompt-injection screening activity and block rate
   exposure             live CISA KEV pressure relevant to the stack
 
-Deterministic, computed from the SQLite store + KEV cache — no AI calls, so
+Deterministic, computed from the SQLite store + KEV cache - no AI calls, so
 it is always available and always explainable.
 """
 import time
@@ -54,7 +54,7 @@ def compute() -> dict:
 
     # Exposure: ransomware-weighted KEV pressure (live feed, cached 6h).
     exposure = 70.0
-    kev_note = "KEV feed unavailable — neutral exposure assumed."
+    kev_note = "KEV feed unavailable - neutral exposure assumed."
     try:
         data = kev.get_kev()
         entries = data.get("entries", [])

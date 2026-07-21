@@ -2,11 +2,11 @@
 
 Parses a dependency manifest (requirements.txt / package.json / pyproject
 snippets) and flags:
-  - exact typosquats from the analyzer's known-bad list
-  - lexical near-misses of the most-installed packages (edit distance 1-2)
-  - unpinned versions, git/HTTP direct references, wildcard ranges
+ - exact typosquats from the analyzer's known-bad list
+ - lexical near-misses of the most-installed packages (edit distance 1-2)
+ - unpinned versions, git/HTTP direct references, wildcard ranges
 
-Pure stdlib, deterministic, offline — the same explainability contract as
+Pure stdlib, deterministic, offline - the same explainability contract as
 analyzer.py.
 """
 import json
@@ -28,7 +28,7 @@ _POPULAR_SET = set(POPULAR)
 
 
 def _edit_distance(a: str, b: str, cap: int = 3) -> int:
-    """Bounded Levenshtein — early-exits above `cap`."""
+    """Bounded Levenshtein - early-exits above `cap`."""
     if abs(len(a) - len(b)) > cap:
         return cap + 1
     prev = list(range(len(b) + 1))
@@ -82,7 +82,7 @@ def scan(manifest: str) -> dict:
             if near:
                 findings.append({**p, "id": "DEP-002", "sev": "high",
                                  "issue": f"Lexically adjacent to popular package '{near[0]}'",
-                                 "fix": f"Verify intent — did you mean '{near[0]}'?"})
+                                 "fix": f"Verify intent - did you mean '{near[0]}'?"})
                 continue
         if re.search(r"git\+|https?://", spec):
             findings.append({**p, "id": "DEP-010", "sev": "high",

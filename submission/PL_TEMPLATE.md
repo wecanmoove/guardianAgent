@@ -1,14 +1,14 @@
-# Simple P&L — GuardAgent Control Plane
+# Simple P&L - GuardAgent Control Plane
 
-*Hackathon window: [start date] → [end date] (90 days). Fill with real figures;
+*Hackathon window: [start date] -> [end date] (90 days). Fill with real figures;
 the judges use this as a viability check. Currency: [EUR/USD].*
 
 ## Revenue
 
 | Line | Month 1 | Month 2 | Month 3 | Total |
 |---|---:|---:|---:|---:|
-| Subscriptions — Team ($49/mo) | | | | |
-| Subscriptions — Business ($199/mo) | | | | |
+| Subscriptions - Team ($49/mo) | | | | |
+| Subscriptions - Business ($199/mo) | | | | |
 | Metered scan overage | | | | |
 | One-off security audits | | | | |
 | **Total revenue** | | | | **$0.00** |
@@ -17,8 +17,8 @@ the judges use this as a viability check. Currency: [EUR/USD].*
 
 | Line | Month 1 | Month 2 | Month 3 | Total |
 |---|---:|---:|---:|---:|
-| Google Cloud — Vertex AI (Gemini 2.5 Flash) | | | | |
-| Google Cloud — Cloud Run / Build / Secret Manager | | | | |
+| Google Cloud - Vertex AI (Gemini 2.5 Flash) | | | | |
+| Google Cloud - Cloud Run / Build / Secret Manager | | | | |
 | Stripe fees | | | | |
 | **Total COGS** | | | | **$0.00** |
 
@@ -36,10 +36,10 @@ the judges use this as a viability check. Currency: [EUR/USD].*
 | | Total |
 |---|---:|
 | Revenue | $0.00 |
-| − COGS | $0.00 |
-| − OpEx | $0.00 |
+| - COGS | $0.00 |
+| - OpEx | $0.00 |
 | **Net profit / (loss)** | **$0.00** |
 
 ---
 **Corporate ID:** [SIREN/SIRET, EIN, or "not yet incorporated"]
-**Prepared by:** [name] · [date]
+**Prepared by:** [name] - [date]

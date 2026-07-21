@@ -1,4 +1,4 @@
-"""GuardAgent CLI — run the security gate from a terminal or CI pipeline.
+"""GuardAgent CLI - run the security gate from a terminal or CI pipeline.
 
     python -m backend.cli scan   <file>            # code / diff / Dockerfile / CI yaml
     python -m backend.cli scan   <file> --sarif    # emit SARIF 2.1.0 to stdout
@@ -8,7 +8,7 @@
 
 Exit codes (so a pipeline can gate on them):
     0  Allow / PASS
-    1  Review / SANITIZE      (warn — configurable to fail with --strict)
+    1  Review / SANITIZE      (warn - configurable to fail with --strict)
     2  Block / BLOCK
     3  Quarantine
     4  usage / IO error
@@ -54,18 +54,18 @@ def cmd_scan(args) -> int:
         print()
     else:
         color = not args.no_color
-        print(f"\nGuardAgent scan · {args.file}")
+        print(f"\nGuardAgent scan -  {args.file}")
         print(f"Decision: {decision}  (composite {analysis['composite']}/100)")
         print(f"{analysis['why']}\n")
         if analysis["findings"]:
             for f in analysis["findings"]:
                 loc = f" (line {f['line']})" if f.get("line") else ""
-                print(f"  {_c('●', f['sev'], color)} [{f['id']}] {f['name']} · {f['sev']}{loc}")
+                print(f"  {_c('*', f['sev'], color)} [{f['id']}] {f['name']} -  {f['sev']}{loc}")
                 print(f"      {f['desc']}")
         else:
             print("  No findings across all analysis layers.")
         if reasoning:
-            print(f"\nGPT-5.6 intent: {reasoning.get('threat_class', '—')} "
+            print(f"\nGPT-5.6 intent: {reasoning.get('threat_class', ' - ')} "
                   f"({reasoning.get('engine', 'deterministic')})")
             print(f"  {reasoning.get('summary', '')}")
         print()
@@ -83,12 +83,12 @@ def cmd_shield(args) -> int:
     else:
         color = not args.no_color
         rz = result["reasoning"]
-        print(f"\nGuardAgent Shield · {args.file} · source={args.source}")
+        print(f"\nGuardAgent Shield -  {args.file} -  source={args.source}")
         print(f"Verdict: {result['verdict']}  "
               f"({len(result['screen']['hits'])} hits, composite {result['screen']['composite']}/100)")
-        print(f"Attack class: {rz.get('attack_class', '—')}  ({rz.get('engine', 'deterministic')})")
+        print(f"Attack class: {rz.get('attack_class', ' - ')}  ({rz.get('engine', 'deterministic')})")
         for h in result["screen"]["hits"]:
-            print(f"  {_c('●', h['sev'], color)} [{h['id']}] {h['name']} · {h['cls']}")
+            print(f"  {_c('*', h['sev'], color)} [{h['id']}] {h['name']} -  {h['cls']}")
         if result.get("sanitized") is not None:
             print("\nSanitized copy (safe to forward):")
             print(result["sanitized"])
@@ -103,10 +103,10 @@ def cmd_deps(args) -> int:
         print()
     else:
         color = not args.no_color
-        print(f"\nGuardAgent supply-chain scan · {args.file}")
+        print(f"\nGuardAgent supply-chain scan -  {args.file}")
         print(f"Decision: {result['decision']}  ({result['packages']} packages)")
         for f in result["findings"]:
-            print(f"  {_c('●', f['sev'], color)} [{f['id']}] {f['name']} · {f['issue']}")
+            print(f"  {_c('*', f['sev'], color)} [{f['id']}] {f['name']} -  {f['issue']}")
             print(f"      fix: {f['fix']}")
         if not result["findings"]:
             print("  No supply-chain issues detected.")
@@ -115,7 +115,7 @@ def cmd_deps(args) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="guardagent", description="GuardAgent security gate — CLI")
+    p = argparse.ArgumentParser(prog="guardagent", description="GuardAgent security gate - CLI")
     p.add_argument("--json", action="store_true", help="machine-readable JSON output")
     p.add_argument("--no-color", action="store_true", help="disable ANSI colour")
     sub = p.add_subparsers(dest="cmd", required=True)

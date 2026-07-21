@@ -1,4 +1,4 @@
-"""Autonomous agent loop — the AI that OPERATES the business.
+"""Autonomous agent loop - the AI that OPERATES the business.
 
 This is the XPRIZE "AI-native operations" core: a scheduled worker where AI
 agents execute the real work of running GuardAgent, each gated by the
@@ -38,7 +38,7 @@ def tick() -> dict:
     agent, action, tool = random.choice(AGENT_TASKS)
     result = agent_policy.evaluate(agent, action, tool)
     store.record_agent_action(agent, action, tool, result.risk, result.policy, result.outcome)
-    store.record_audit("agent tool call", f"{agent} · {tool}", "POL-AGT", result.outcome)
+    store.record_audit("agent tool call", f"{agent} -  {tool}", "POL-AGT", result.outcome)
     line = f"[{time.strftime('%H:%M:%S')}] {agent:>18} -> {result.outcome:<18} {tool}"
     print(line)
     return {"agent": agent, "outcome": result.outcome, "policy": result.policy}

@@ -1,8 +1,8 @@
 """Live CISA KEV (Known Exploited Vulnerabilities) intelligence.
 
 The Threat & Exposure Watch module is no longer simulated: it pulls the CISA
-KEV catalog — the authoritative list of vulnerabilities confirmed exploited in
-the wild, updated daily — server-side (no browser CORS proxy needed), then
+KEV catalog - the authoritative list of vulnerabilities confirmed exploited in
+the wild, updated daily - server-side (no browser CORS proxy needed), then
 classifies every entry by database engine and OS/hypervisor layer and flags
 ransomware-linked and freshly-added CVEs.
 
@@ -19,7 +19,7 @@ import time
 import urllib.request
 
 KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
-_TTL = 6 * 3600  # 6h — CISA updates at most daily
+_TTL = 6 * 3600  # 6h - CISA updates at most daily
 _cache: dict = {"ts": 0, "data": None}
 
 # Windows/corp-proxy TLS: prefer the OS trust store when available.
@@ -68,7 +68,7 @@ def _days_since(date_str: str) -> float:
 
 
 def get_kev(force: bool = False) -> dict:
-    """Return classified KEV data (cached). Never raises — errors are reported
+    """Return classified KEV data (cached). Never raises - errors are reported
     in the payload so the UI can degrade gracefully."""
     now = time.time()
     if not force and _cache["data"] and (now - _cache["ts"] < _TTL):
@@ -89,7 +89,7 @@ def get_kev(force: bool = False) -> dict:
     for v in vulns:
         engine, cat = _classify(v)
         age = _days_since(v.get("dateAdded", ""))
-        # Field is exactly "Known" / "Unknown" — substring match would treat
+        # Field is exactly "Known" / "Unknown" - substring match would treat
         # "Unknown" as ransomware, so compare exactly.
         ransom = str(v.get("knownRansomwareCampaignUse", "")).strip().lower() == "known"
         within_year = age <= 365

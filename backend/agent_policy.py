@@ -29,17 +29,17 @@ POLICIES = [
     ("POL-AGT-030", lambda t, a: bool(re.search(r"s3\.put_object\(ext|external bucket|egress|exfil", t + " " + a, re.I)),
      "Awaiting approval", 0.89, "cross-boundary egress needs human approval", "b-med"),
     ("POL-AGT-045", lambda t, a: bool(re.search(r"rotate_secret|vault\.|delete_key", t, re.I)),
-     "Executed", 0.42, "privileged but in runbook — executed with audit artifact", "b-ok"),
+     "Executed", 0.42, "privileged but in runbook - executed with audit artifact", "b-ok"),
     ("POL-AGT-050", lambda t, a: bool(re.search(r"close|bulk.?close|auto.?close|resolve", t + " " + a, re.I)),
      "Sandboxed", 0.58, "state-changing triage runs in shadow mode first", "b-quar"),
 ]
 
-DEFAULT = ("POL-AGT-000", "Executed", 0.15, "read/comment scope — no privileged effect", "b-ok")
+DEFAULT = ("POL-AGT-000", "Executed", 0.15, "read/comment scope - no privileged effect", "b-ok")
 
 
 def evaluate(agent: str, action: str, tool: str) -> PolicyResult:
     for pid, match, outcome, risk, reason, cls in POLICIES:
         if match(tool, action):
-            return PolicyResult(outcome, f"{outcome.upper()} · {pid} {reason}", risk, cls)
+            return PolicyResult(outcome, f"{outcome.upper()} -  {pid} {reason}", risk, cls)
     pid, outcome, risk, reason, cls = DEFAULT
-    return PolicyResult(outcome, f"{outcome.upper()} · {pid} {reason}", risk, cls)
+    return PolicyResult(outcome, f"{outcome.upper()} -  {pid} {reason}", risk, cls)

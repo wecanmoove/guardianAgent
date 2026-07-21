@@ -3,13 +3,13 @@
 One place that owns the OpenAI integration for every reasoning surface
 (reasoner.py, shield.py). Behaviour:
 
-  - Reads OPENAI_API_KEY / OPENAI_MODEL once.
-  - Requests strict JSON (response_format=json_object).
-  - If the preferred model id is unknown to the account (404 / model-not-found),
+ - Reads OPENAI_API_KEY / OPENAI_MODEL once.
+ - Requests strict JSON (response_format=json_object).
+ - If the preferred model id is unknown to the account (404 / model-not-found),
     it degrades through a fallback chain of GPT-5-family models instead of
-    failing — so "gpt-5.6" keeps working as the family evolves.
-  - One retry on transient errors (rate limit / timeout / 5xx).
-  - Raises on hard failure; callers own the deterministic fallback so the
+    failing - so "gpt-5.6" keeps working as the family evolves.
+ - One retry on transient errors (rate limit / timeout / 5xx).
+ - Raises on hard failure; callers own the deterministic fallback so the
     security gate never goes dark.
 """
 import json
@@ -74,14 +74,14 @@ def complete_json(system_prompt: str, user_prompt: str, temperature: float = 0.1
                 if _resolved_model != model:
                     _resolved_model = model
                     if model != MODEL:
-                        logger.warning("Model %s unavailable — using %s.", MODEL, model)
+                        logger.warning("Model %s unavailable - using %s.", MODEL, model)
                 data["engine"] = model
                 return data
-            except Exception as e:  # noqa: BLE001 — classify below
+            except Exception as e:  # noqa: BLE001 - classify below
                 last_err = e
                 if _is_model_missing(e):
                     break  # try the next model in the chain
-                if attempt == 1:  # transient — one quick retry
+                if attempt == 1:  # transient - one quick retry
                     time.sleep(0.6)
                     continue
                 raise

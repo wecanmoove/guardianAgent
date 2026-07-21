@@ -3,7 +3,7 @@
 *Required by the rules: total spend during the hackathon period, **including
 marketing and customer-acquisition spend, disclosed even if zero**.*
 
-Hackathon window: [start date] → [end date]
+Hackathon window: [start date] -> [end date]
 
 | Category | Item | Amount | Evidence |
 |---|---|---:|---|
@@ -15,8 +15,8 @@ Hackathon window: [start date] → [end date]
 | **Total spend** | | **$0.00** | |
 
 ## Notes
-- Marketing/customer-acquisition spend to date: **$[0]** — acquisition so far has
-  been [organic / direct outreach / communities], executed by [the support-agent
-  drafting outreach + human approval].
+- Marketing/customer-acquisition spend to date: **$[0]** - acquisition so far has
+ been [organic / direct outreach / communities], executed by [the support-agent
+ drafting outreach + human approval].
 - Attach the GCP billing CSV export for the window as
-  `submission/evidence/gcp-billing.csv`.
+ `submission/evidence/gcp-billing.csv`.
