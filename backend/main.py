@@ -2,7 +2,7 @@
 
 Evolution of guard-agent-test's webhook bridge into a full control plane:
   - keeps the signed GitLab webhook DNA (HMAC-SHA256 verification)
-  - adds a real /api/scan analysis endpoint (deterministic + Gemini 2.5 Flash)
+  - adds a real /api/scan analysis endpoint (deterministic + OpenAI GPT-5.6)
   - adds an AI-agent policy enforcement endpoint (/api/agent/act)
   - persists everything to SQLite for the audit trail / judge evidence
   - serves the single-file dashboard UI
@@ -15,13 +15,15 @@ import hmac
 import json
 import os
 
+import asyncio
+
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from . import store, analyzer, gemini, agent_policy, kev
+from . import store, analyzer, reasoner, agent_policy, kev, shield, deps, posture, sarif
 
-app = FastAPI(title="GuardAgent Control Plane", version="2.0.0")
+app = FastAPI(title="GuardAgent Control Plane", version="3.0.0")
 store.init_db()
 
 GITLAB_WEBHOOK_SECRET = os.environ.get("GITLAB_WEBHOOK_SECRET")
@@ -55,11 +57,24 @@ class AgentActRequest(BaseModel):
     tool: str
 
 
+class ShieldRequest(BaseModel):
+    content: str
+    source: str = "user-prompt"   # user-prompt | retrieved-doc | tool-output
+
+
+class FixRequest(BaseModel):
+    code: str
+
+
+class DepsRequest(BaseModel):
+    manifest: str
+
+
 # -------------------------------------------------------------- core pipeline
 def run_scan(code: str, meta: dict) -> dict:
-    """Deterministic analysis + Gemini reasoning + persistence."""
+    """Deterministic analysis + OpenAI reasoning + persistence."""
     analysis = analyzer.analyze(code)
-    verdict = gemini.reason(code, analysis)
+    verdict = reasoner.reason(code, analysis)
 
     decision = verdict.get("verdict", analysis["decision"])
     sev = ("critical" if decision in ("Block", "Quarantine")
@@ -92,7 +107,9 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "gemini": gemini.available(), "model": gemini.MODEL, **store.stats()}
+    return {"status": "ok", "openai": reasoner.available(), "model": reasoner.MODEL,
+            "modules": ["scan", "fix", "shield", "deps", "posture", "kev", "events"],
+            **store.stats()}
 
 
 @app.post("/api/scan")
@@ -132,6 +149,89 @@ async def api_audit(limit: int = 200):
 @app.get("/api/stats")
 async def api_stats():
     return store.stats()
+
+
+@app.post("/api/shield")
+async def api_shield(req: ShieldRequest):
+    """Prompt-Injection Shield: screen content BEFORE it reaches an AI agent.
+
+    Verdicts: PASS | SANITIZE (sanitized copy returned) | BLOCK."""
+    result = shield.inspect(req.content, req.source)
+    store.record_shield_check(
+        source=req.source, verdict=result["verdict"],
+        attack_class=result["reasoning"].get("attack_class", "Unknown"),
+        composite=result["screen"]["composite"],
+        engine=result["reasoning"].get("engine", "deterministic"),
+        detectors=[h["id"] for h in result["screen"]["hits"]],
+        excerpt=req.content)
+    store.record_audit("shield check", f"{req.source} ({len(req.content)} chars)",
+                       ", ".join(h["id"] for h in result["screen"]["hits"][:3]) or "PIS-000",
+                       result["verdict"])
+    return result
+
+
+@app.get("/api/shield/checks")
+async def api_shield_checks(limit: int = 100):
+    return store.list_shield_checks(limit)
+
+
+@app.post("/api/fix")
+async def api_fix(req: FixRequest):
+    """AI Fix Engine: analyze then generate the remediated version of the code."""
+    analysis = analyzer.analyze(req.code)
+    fix = reasoner.propose_fix(req.code, analysis)
+    store.record_audit("fix proposal", f"{len(analysis['findings'])} finding(s)",
+                       ", ".join(f["id"] for f in analysis["findings"][:3]) or "FP-000",
+                       f"remediation ({fix.get('residual_risk', '?')} residual)")
+    return {"analysis": analysis, "fix": fix}
+
+
+@app.post("/api/scan/sarif")
+async def api_scan_sarif(req: ScanRequest):
+    """Analyze and return findings as SARIF 2.1.0 — drops into GitHub code
+    scanning, VS Code's SARIF viewer, or any SARIF-aware CI pipeline."""
+    analysis = analyzer.analyze(req.code)
+    return JSONResponse(sarif.to_sarif(analysis, artifact_uri=req.repo or "input.snippet"))
+
+
+@app.post("/api/deps")
+async def api_deps(req: DepsRequest):
+    """Supply-chain scan of a dependency manifest (requirements.txt / package.json)."""
+    result = deps.scan(req.manifest)
+    store.record_audit("dependency scan", f"{result['packages']} package(s)",
+                       ", ".join(f["id"] for f in result["findings"][:3]) or "DEP-000",
+                       result["decision"])
+    return result
+
+
+@app.get("/api/posture")
+async def api_posture():
+    """Aggregate 0-100 security posture score with per-pillar breakdown."""
+    return posture.compute()
+
+
+@app.get("/api/events")
+async def api_events():
+    """Server-sent events: pushes new scans / agent actions / shield checks /
+    audit entries as they land, so every dashboard module updates live."""
+    async def stream():
+        last = {"scan": 0, "action": 0, "audit": 0, "shield": 0}
+        for kind, rows in (("scan", store.list_scans(1)), ("action", store.list_agent_actions(1)),
+                           ("audit", store.list_audit(1)), ("shield", store.list_shield_checks(1))):
+            last[kind] = rows[0]["id"] if rows else 0
+        yield "event: hello\ndata: {}\n\n"
+        while True:
+            await asyncio.sleep(2)
+            batches = (("scan", store.list_scans(10)), ("action", store.list_agent_actions(10)),
+                       ("audit", store.list_audit(10)), ("shield", store.list_shield_checks(10)))
+            for kind, rows in batches:
+                fresh = [r for r in rows if r["id"] > last[kind]]
+                for r in reversed(fresh):
+                    yield f"event: {kind}\ndata: {json.dumps(r)}\n\n"
+                if fresh:
+                    last[kind] = max(r["id"] for r in fresh)
+    return StreamingResponse(stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @app.get("/api/kev")

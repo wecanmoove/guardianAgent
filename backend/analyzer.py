@@ -4,7 +4,7 @@ This is the fast, explainable first pass. It mirrors the DNA of the original
 guard-agent-test (secrets, dependency confusion, obfuscation, exfiltration)
 and extends it with CI-policy drift and AI-agent-safety layers.
 
-Gemini 2.5 Flash (see gemini.py) runs as a *second* semantic pass on top of
+OpenAI GPT-5.6 (see reasoner.py) runs as a *second* semantic pass on top of
 these deterministic findings — reasoning about intent, not just keywords.
 """
 import re
@@ -151,6 +151,31 @@ RULES = [
     Rule("SUP-020", "supply", "Dependency pinned to a Git URL / HTTP", "medium", 10,
          "A dependency resolves from a raw Git/HTTP URL rather than a checksummed registry release.",
          r"(?i)(?:git\+https?:\/\/|@\s*git|https?:\/\/)[^\s]+\.git|pip install[^\n]*--index-url"),
+
+    # ---- injection / template ----
+    Rule("SSTI-001", "code", "Server-side template injection", "high", 24,
+         "A template is rendered from a string built with user input — server-side template injection can reach RCE.",
+         r"""(?i)(?:render_template_string|Template\s*\()\s*(?:.*\+\s*)?(?:f["']|request|args|params|input|user)""",
+         ["T1190"]),
+    Rule("XXE-001", "code", "XML parsed with external entities enabled", "high", 20,
+         "An XML parser resolves external entities (no resolve_entities=False / defusedxml) — XXE and SSRF risk.",
+         r"(?i)etree\.(?:parse|fromstring)|xml\.dom\.minidom|xml\.sax\.|XMLParser\((?![^)]*resolve_entities\s*=\s*False)",
+         ["T1059"]),
+    Rule("SEC-011", "code", "Hardcoded signing secret", "high", 24,
+         "A JWT/HMAC signing secret is hardcoded — anyone with the source can forge valid tokens. Use a secret manager.",
+         r"""(?i)(?:jwt\.encode|hmac\.new|sign|secret_key|SECRET_KEY|JWT_SECRET)\s*[=(,][^\n]*["'][A-Za-z0-9_\-!@#$%^&*]{8,}["']""",
+         ["T1552.001"]),
+
+    # ---- AI-agent security (on-theme: securing agentic AI) ----
+    Rule("AGT-010", "agent", "Unvalidated LLM output executed", "critical", 32,
+         "Model/LLM output is passed straight into exec/eval/os.system/subprocess — the canonical agentic RCE path. "
+         "Validate and sandbox model output before it can act.",
+         r"""(?i)(?:eval|exec|os\.system|subprocess\.(?:run|call|Popen))\s*\([^)]*(?:response|completion|message|output|llm|model|gpt|assistant)""",
+         ["T1059.006"]),
+    Rule("AGT-012", "agent", "Over-broad tool/function exposure", "high", 18,
+         "A tool/function schema exposes shell, file-write or delete capability to an AI agent without a policy gate.",
+         r"""(?i)("?(?:name|function)"?\s*[:=]\s*["'](?:run_shell|execute_shell|exec|delete_file|write_file|rm|eval)["'])""",
+         ["T1059"]),
 ]
 
 CATS = [("code", "Code risk"), ("supply", "Supply chain"), ("exfil", "Exfiltration"),

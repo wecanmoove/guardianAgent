@@ -19,7 +19,7 @@ import argparse
 import random
 import time
 
-from . import store, agent_policy, gemini, analyzer
+from . import store, agent_policy, reasoner, analyzer
 
 AGENT_TASKS = [
     ("triage-agent", "Classify new scan and close if false positive", "findings.close(scan_id)"),
@@ -51,7 +51,7 @@ def main():
     args = ap.parse_args()
     store.init_db()
     print("[*] GuardAgent autonomous operations loop started.")
-    print(f"    Gemini reasoning: {'LIVE ' + gemini.MODEL if gemini.available() else 'deterministic fallback'}")
+    print(f"    OpenAI reasoning: {'LIVE ' + reasoner.MODEL if reasoner.available() else 'deterministic fallback'}")
     n = 0
     while args.cycles == 0 or n < args.cycles:
         tick()

@@ -33,6 +33,12 @@ CREATE TABLE IF NOT EXISTS audit (
     trigger_kind TEXT, subject TEXT, policy TEXT,
     decision TEXT, approver TEXT, evidence TEXT
 );
+CREATE TABLE IF NOT EXISTS shield_checks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts REAL NOT NULL,
+    source TEXT, verdict TEXT, attack_class TEXT,
+    composite INTEGER, engine TEXT, detectors TEXT, excerpt TEXT
+);
 """
 
 
@@ -127,10 +133,36 @@ def list_audit(limit: int = 200) -> list[dict]:
     return out
 
 
+def record_shield_check(source: str, verdict: str, attack_class: str, composite: int,
+                        engine: str, detectors: list[str], excerpt: str) -> int:
+    with _conn() as con:
+        cur = con.execute(
+            "INSERT INTO shield_checks (ts, source, verdict, attack_class, composite, engine, detectors, excerpt)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            (time.time(), source, verdict, attack_class, composite, engine,
+             json.dumps(detectors), excerpt[:300]))
+        return cur.lastrowid
+
+
+def list_shield_checks(limit: int = 100) -> list[dict]:
+    with _conn() as con:
+        rows = con.execute("SELECT * FROM shield_checks ORDER BY ts DESC LIMIT ?", (limit,)).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["detectors"] = json.loads(d.pop("detectors") or "[]")
+        d["age"] = _age(d["ts"])
+        out.append(d)
+    return out
+
+
 def stats() -> dict:
     with _conn() as con:
         scans = con.execute("SELECT COUNT(*) c FROM scans").fetchone()["c"]
         blocked = con.execute("SELECT COUNT(*) c FROM scans WHERE decision IN ('Block','Quarantine')").fetchone()["c"]
         actions = con.execute("SELECT COUNT(*) c FROM agent_actions").fetchone()["c"]
         denied = con.execute("SELECT COUNT(*) c FROM agent_actions WHERE outcome='Denied'").fetchone()["c"]
-    return {"scans": scans, "blocked": blocked, "agent_actions": actions, "denied": denied}
+        shield = con.execute("SELECT COUNT(*) c FROM shield_checks").fetchone()["c"]
+        shield_blocked = con.execute("SELECT COUNT(*) c FROM shield_checks WHERE verdict='BLOCK'").fetchone()["c"]
+    return {"scans": scans, "blocked": blocked, "agent_actions": actions, "denied": denied,
+            "shield_checks": shield, "shield_blocked": shield_blocked}
